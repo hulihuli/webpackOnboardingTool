@@ -1,0 +1,28 @@
+<div>
+    <table class="table">
+        <thead>
+            <th><i class="fa fa-chevron-down"></i></th>
+            <th>Version</th>
+            <th>State</th>
+            <th>LatestVersionState</th>
+            <th>Segment</th>
+            <th>Owner</th>
+            <th>Analysis</th>
+            <th>TFS</th>
+        </thead>
+        <tbody>
+            <tr *ngFor="let triageViewSupervisor of triageViewSupervisors ; trackBy: index">
+                <th [innerHTML]="triageViewSupervisor.entitySpaceViewName"></th>
+                <th [innerHTML]="triageViewSupervisor.latestVersion"></th>
+                <th [innerHTML]="triageViewSupervisor.state"></th>
+                <th [innerHTML]="triageViewSupervisor.latestVersionState"></th>
+                <th [innerHTML]="triageViewSupervisor.segment"></th>
+                <th [innerHTML]="triageViewSupervisor.owner"></th>
+                <th>
+                    <a  target="_blank" [href]="triageViewSupervisor.triageAnalysisUrl" [innerHTML]="triageViewSupervisor.triageAnalysisId"></a>
+                </th>
+                <th [innerHTML]="triageViewSupervisor.tfsUrl"></th>
+            </tr>
+        </tbody>
+    </table>
+</div>

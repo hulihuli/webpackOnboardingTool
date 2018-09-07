@@ -1,0 +1,106 @@
+.report-infobar{
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+    font-size: 14px;
+}
+
+.report-infobar-title{
+    font-size: 28px;
+    color: #3c8dbc;
+}
+
+.white-board{
+    margin: 10px;
+    padding: 5px;
+    background: #ffffff;
+    border-radius: 4px;
+    flex-grow:1;
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+    font-size: 14px;
+    overflow:hidden;
+    color: #666;
+}
+
+.input-clear {
+    position: absolute;
+    right: 5px;
+    top: 0;
+    bottom: 0;
+    height: 14px;
+    margin: auto;
+    font-size: 14px;
+    cursor: pointer;
+    color: #ccc;
+    z-index: 999;
+}
+
+.table > tbody > tr > th,.table > tbody > tr > td{
+    vertical-align: middle
+}
+
+.mx-15 {
+    margin-left: 15px;
+    margin-right: 15px;
+}
+
+.ml-15 {
+    margin-left: 15px;
+}
+
+.ml-5p {
+    margin-left: 5%;
+}
+
+.full-width{
+    width: 100%;
+}
+
+.mwd-180 {
+    min-width: 180px;
+}
+
+.mr-18{
+    margin-right: 18px;
+}
+
+.disabled{
+    pointer-events: none;
+    opacity: 0.5;
+    cursor: none;
+}
+
+.pd-8{
+    padding: 8px;
+}
+
+.pd-15{
+    padding: 15px;
+}
+
+.pt-10{
+    padding-top: 10px;
+}
+
+.pb-10{
+    padding-bottom: 10px !important;
+}
+
+.daliy-chart ul{
+    font-size: 16px;
+    width: 180px !important;
+}
+
+.pd-20{
+    padding: 20px;
+}
+
+.bg-white{
+    background: #fff;
+}
+
+.ft-16{
+    font-size: 16px;
+}
+
+.vertical-middle{
+    vertical-align: middle;
+}

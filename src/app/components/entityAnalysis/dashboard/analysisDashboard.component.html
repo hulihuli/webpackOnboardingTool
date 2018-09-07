@@ -1,0 +1,49 @@
+<div>
+    <h3>AnalysisDashboard</h3>
+    <div>
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th class="text-center">Id</th>
+                    <th class="text-center">Name</th>
+                    <th class="text-center" [ngSwitch]="currentAnalysisType">
+                        <span  *ngSwitchCase="1">
+                            EntitySpace
+                        </span>
+                        <span  *ngSwitchCase="2">
+                            EntityView
+                        </span>
+                        <span  *ngSwitchCase="3">
+                            EntityGraph
+                        </span>
+                    </th>
+                    <th class="text-center">CreatedBy</th>
+                    <th class="text-center">CreatedTime</th>
+                    <th class="text-center">Actions</th>
+                </tr>
+            </thead>
+            <tbody *ngFor="let entityAnalysisDto of entityAnalysisDtos">
+                <tr>
+                    <td class="text-center" [innerHtml]=entityAnalysisDto.id></td>
+                    <td class="text-center">
+                        <a routerLink="/entityanalysis/entityspace"  [innerHtml]=entityAnalysisDto.name></a>
+                    </td>
+                    <td class="text-center" [innerHtml]=entityAnalysisDto.entitySpaceName></td>
+                    <td class="text-center" [innerHtml]=entityAnalysisDto.createdBy></td>
+                    <td class="text-center" [innerHtml]=entityAnalysisDto.createdTime></td>
+                    <td class="text-center">
+                        Delete | Clone
+                    </td>
+                </tr>
+                <tr [hidden]="!collapseDetails">
+                    <td>560001</td>        
+                    <td>Bangalore</td>
+                    <td>560001</td>
+                    <td>560001</td>
+                    <td>560001</td>
+                    <td>560001</td>           
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>

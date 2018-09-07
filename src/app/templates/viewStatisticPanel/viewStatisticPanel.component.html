@@ -1,0 +1,222 @@
+<div>
+    <ul class="nav nav-tabs">
+        <li class="active">
+            <a data-toggle="tab" [href]="'#Latency'+triageViewSupervisor.id">Latency</a>
+        </li>
+        <li>
+            <a data-toggle="tab" [href]="'#versionSLA'+triageViewSupervisor.id">Version SLA</a>
+        </li>
+        <li>
+            <a data-toggle="tab" [href]="'#versionDetail'+triageViewSupervisor.id">Version Detail</a>
+        </li>
+        <li>
+            <a data-toggle="tab" [href]="'#version'+triageViewSupervisor.id">Version Delay</a>
+        </li>
+        <li>
+            <a data-toggle="tab" [href]="'#commit'+triageViewSupervisor.id">Commit Delay</a>
+        </li>
+        <li>
+            <a data-toggle="tab" [href]="'#monthlyCount'+triageViewSupervisor.id">Monthly</a>
+        </li>
+    </ul>
+    <div class="tab-content"> 
+        <div [id]="'Latency'+triageViewSupervisor.id" class="tab-pane fade in active" style="height:200px">
+            <table class="table" style="text-align:center">
+                <thead>
+                    <tr class="bg-primary">
+                        <th style="text-align:center">Range</th>
+                        <th style="text-align:center">Hours</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Min Latency</td>
+                        <td>{{triageViewSupervisor.minLatency}} hrs</td>
+                    </tr>
+                    <tr>
+                        <td>Max Latency</td>
+                        <td>{{triageViewSupervisor.maxLatency}} hrs</td>
+                    </tr>
+                    <tr>
+                        <td>Average</td>
+                        <td>{{triageViewSupervisor.averageLatency}} hrs</td>
+                    </tr>
+                    <tr>
+                        <td>90%</td>
+                        <td>{{triageViewSupervisor.ninetyPercentLatency}} hrs</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div [id]="'versionSLA'+triageViewSupervisor.id" class="tab-pane fade" style="height:420px">
+            <ngx-charts-bar-vertical
+                [view]="triageViewSupervisor.missSlaBarChart.view"
+                [scheme]="triageViewSupervisor.missSlaBarChart.scheme"
+                [results]="triageViewSupervisor.missSlaBarChart.results"
+                [gradient]="triageViewSupervisor.missSlaBarChart.gradient"
+                [xAxis]="triageViewSupervisor.missSlaBarChart.xAxis"
+                [yAxis]="triageViewSupervisor.missSlaBarChart.yAxis"
+                [legendTitle]="triageViewSupervisor.missSlaBarChart.legendTitle"
+                [legend]="triageViewSupervisor.missSlaBarChart.legend">
+                <ng-template #tooltipTemplate let-item="model">
+                    <p style="font-size:20px;margin:1px 0 0 0;">Version: {{ triageViewSupervisor.missSlaBarChart.verticalBarChartDict.get(item.name).version}}</p>
+                    <ul style="text-align:left">
+                        <li>
+                            State: {{triageViewSupervisor.missSlaBarChart.verticalBarChartDict.get(item.name).state}}
+                        </li>
+                        <li>
+                            EndTime: {{triageViewSupervisor.missSlaBarChart.verticalBarChartDict.get(item.name).completedTime}}
+                        </li>
+                        <li>
+                            MissSlaType: {{MissSlaType[triageViewSupervisor.missSlaBarChart.verticalBarChartDict.get(item.name).missSlaType]}}
+                        </li>
+                        <li>
+                            TotalTime: {{triageViewSupervisor.missSlaBarChart.verticalBarChartDict.get(item.name).totalTime}}
+                        </li>
+                        <li>
+                            Latency: {{triageViewSupervisor.missSlaBarChart.verticalBarChartDict.get(item.name).nextStandardVersionLatency}}
+                        </li>
+                        <li>
+                            UpdateType: {{triageViewSupervisor.missSlaBarChart.verticalBarChartDict.get(item.name).updateType}}
+                        </li>
+                    </ul>
+                </ng-template>
+            </ngx-charts-bar-vertical>
+        </div>
+
+        <div [id]="'version'+triageViewSupervisor.id" class="tab-pane fade" style="height:420px">
+            <ngx-charts-line-chart 
+                [view]="triageViewSupervisor.versionDelayLineChart.view"
+                [scheme]="triageViewSupervisor.versionDelayLineChart.scheme"
+                [results]="triageViewSupervisor.versionDelayLineChart.results"
+                [gradient]="triageViewSupervisor.versionDelayLineChart.gradient"
+                [xAxis]="triageViewSupervisor.versionDelayLineChart.xAxis"
+                [yAxis]="triageViewSupervisor.versionDelayLineChart.yAxis"
+                [legend]="triageViewSupervisor.versionDelayLineChart.legend"
+                [showXAxisLabel]="triageViewSupervisor.versionDelayLineChart.showXAxisLabel"
+                [showYAxisLabel]="triageViewSupervisor.versionDelayLineChart.showYAxisLabel"
+                [xAxisLabel]="triageViewSupervisor.versionDelayLineChart.xAxisLabel"
+                [yAxisLabel]="triageViewSupervisor.versionDelayLineChart.yAxisLabel"
+                [autoScale]="triageViewSupervisor.versionDelayLineChart.autoScale">     
+                <!-- https://plnkr.co/edit/n0N8GJfKrd7RHRNDmRo3?p=preview -->  
+                <ng-template #seriesTooltipTemplate let-items="model">
+                    <p style="font-size:20px;margin:1px 0 0 0;">{{items[0].name}}</p>
+                    <ul style="text-align:left">
+                        <li *ngFor="let item of items; trackBy: index">
+                            Time: {{(triageViewSupervisor.versionDelayLineChart.lineChartDetailDict.get(item.name)).completedTime}}
+                        </li>
+                        <li *ngFor="let item of items; trackBy: index">
+                            State: {{(triageViewSupervisor.versionDelayLineChart.lineChartDetailDict.get(item.name)).state}}
+                        </li>
+                        <li *ngFor="let item of items; trackBy: index">
+                            Version: {{(triageViewSupervisor.versionDelayLineChart.lineChartDetailDict.get(item.name)).version}}
+                        </li>
+                        <li *ngFor="let item of items; trackBy: index">
+                            {{item.series}}: {{item.value | number}}
+                            <br>
+                        </li>
+                    </ul>
+                </ng-template>
+            </ngx-charts-line-chart>
+        </div>
+        <div [id]="'commit'+triageViewSupervisor.id" class="tab-pane fade" style="height:420px">
+            <ngx-charts-line-chart
+                [view]="triageViewSupervisor.commitDelayLineChart.view"
+                [scheme]="triageViewSupervisor.commitDelayLineChart.scheme"
+                [results]="triageViewSupervisor.commitDelayLineChart.results"
+                [gradient]="triageViewSupervisor.commitDelayLineChart.gradient"
+                [xAxis]="triageViewSupervisor.commitDelayLineChart.xAxis"
+                [yAxis]="triageViewSupervisor.commitDelayLineChart.yAxis"
+                [legend]="triageViewSupervisor.commitDelayLineChart.legend"
+                [showXAxisLabel]="triageViewSupervisor.commitDelayLineChart.showXAxisLabel"
+                [showYAxisLabel]="triageViewSupervisor.commitDelayLineChart.showYAxisLabel"
+                [xAxisLabel]="triageViewSupervisor.commitDelayLineChart.xAxisLabel"
+                [yAxisLabel]="triageViewSupervisor.commitDelayLineChart.yAxisLabel"
+                [autoScale]="triageViewSupervisor.commitDelayLineChart.autoScale">
+                <ng-template #seriesTooltipTemplate let-items="model">
+                    <p style="font-size:20px;margin:1px 0 0 0;">{{items[0].name}}</p>
+                    <ul style="text-align:left">
+                        <li *ngFor="let item of items; trackBy: index">
+                            Time: {{(triageViewSupervisor.commitDelayLineChart.lineChartDetailDict.get(item.name)).createdTimestamp}}
+                        </li>
+                        <li *ngFor="let item of items; trackBy: index">
+                            TriagedtTime: {{(triageViewSupervisor.commitDelayLineChart.lineChartDetailDict.get(item.name)).triagedTimestamp}}
+                        </li>
+                        <li *ngFor="let item of items; trackBy: index">
+                            CompletedTime: {{(triageViewSupervisor.commitDelayLineChart.lineChartDetailDict.get(item.name)).completedTime}}
+                        </li>
+                        <li *ngFor="let item of items; trackBy: index">
+                            State: {{(triageViewSupervisor.commitDelayLineChart.lineChartDetailDict.get(item.name)).state}}
+                        </li>
+                        <li *ngFor="let item of items; trackBy: index">
+                            Delay: {{item.value | number}}
+                            <br>
+                        </li>
+                    </ul>
+                </ng-template>
+            </ngx-charts-line-chart>
+        </div>
+        <div [id]="'monthlyCount'+triageViewSupervisor.id" class="tab-pane fade" style="height:420px">
+            <ngx-charts-line-chart
+                [view]="triageViewSupervisor.monthlyCountLineChart.view"
+                [scheme]="triageViewSupervisor.monthlyCountLineChart.scheme"
+                [results]="triageViewSupervisor.monthlyCountLineChart.results"
+                [legendTitle]="triageViewSupervisor.monthlyCountLineChart.legendTitle"
+                [gradient]="triageViewSupervisor.monthlyCountLineChart.gradient"
+                [xAxis]="triageViewSupervisor.monthlyCountLineChart.xAxis"
+                [yAxis]="triageViewSupervisor.monthlyCountLineChart.yAxis"
+                [legend]="triageViewSupervisor.monthlyCountLineChart.legend"
+                [showXAxisLabel]="triageViewSupervisor.monthlyCountLineChart.showXAxisLabel"
+                [showYAxisLabel]="triageViewSupervisor.monthlyCountLineChart.showYAxisLabel"
+                [xAxisLabel]="triageViewSupervisor.monthlyCountLineChart.xAxisLabel"
+                [yAxisLabel]="triageViewSupervisor.monthlyCountLineChart.yAxisLabel">
+                <ng-template #tooltipTemplate let-item="model">
+                    <p style="font-size:20px;margin:1px 0 0 0;"> {{item.series}}</p>
+                    <ol style="text-align:left">
+                        <li *ngFor="let t of triageViewSupervisor.monthlyCountLineChart.lineChartDetailDict.get(item.name+item.series); trackBy: index">
+                            Time: {{t.createdTimestamp}}
+                            <br>
+                            Version: {{t.version}}
+                            <br>
+                            State: {{t.state}}
+                            <br>
+                        </li>
+                    </ol>
+                </ng-template>
+            </ngx-charts-line-chart>
+        </div>
+        <div [id]="'versionDetail'+triageViewSupervisor.id" class="tab-pane fade" style="height:420px">
+            <ngx-charts-bar-vertical-stacked 
+                [view]="triageViewSupervisor.versionDetailStackedVerticalBarChart.view"
+                [scheme]="triageViewSupervisor.versionDetailStackedVerticalBarChart.scheme"
+                [results]="triageViewSupervisor.versionDetailStackedVerticalBarChart.results"
+                [gradient]="triageViewSupervisor.versionDetailStackedVerticalBarChart.gradient"
+                [xAxis]="triageViewSupervisor.versionDetailStackedVerticalBarChart.xAxis"
+                [yAxis]="triageViewSupervisor.versionDetailStackedVerticalBarChart.yAxis"
+                [legend]="triageViewSupervisor.versionDetailStackedVerticalBarChart.legend"
+                [showXAxisLabel]="triageViewSupervisor.versionDetailStackedVerticalBarChart.showXAxisLabel"
+                [showYAxisLabel]="triageViewSupervisor.versionDetailStackedVerticalBarChart.showYAxisLabel"
+                [xAxisLabel]="triageViewSupervisor.versionDetailStackedVerticalBarChart.xAxisLabel"
+                [yAxisLabel]="triageViewSupervisor.versionDetailStackedVerticalBarChart.yAxisLabel">     
+                <!-- move mouse over some nodes -->  
+                <ng-template #tooltipTemplate let-item="model">
+                    <p style="font-size:20px;margin:1px 0 0 0;">Version: {{(triageViewSupervisor.versionDetailStackedVerticalBarChart.stackedVerticalBarChartDetailDict.get(item.series)).version}}</p>
+                    <ul style="text-align:left">
+                        <li>
+                            State: {{item.name}}
+                        </li>
+                        <li>
+                            EndTime: {{(triageViewSupervisor.versionDetailStackedVerticalBarChart.stackedVerticalBarChartDetailDict.get(item.series+item.name))}}
+                        </li>
+                        <li>
+                            Cost: {{item.value | number}}
+                        </li>
+                        <li>
+                            UpdateType: {{(triageViewSupervisor.versionDetailStackedVerticalBarChart.stackedVerticalBarChartDetailDict.get(item.series)).updateType}}
+                        </li>
+                    </ul>
+                </ng-template>
+            </ngx-charts-bar-vertical-stacked>
+        </div>
+    </div>
+</div>

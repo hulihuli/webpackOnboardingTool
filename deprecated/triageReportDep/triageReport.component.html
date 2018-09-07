@@ -1,0 +1,400 @@
+<!-- <div class="report-infobar">
+    <div class="flex" style="padding-left:1%;">
+        <div style="width:12%">
+            <b class="report-infobar-title">&nbsp;Report</b>
+        </div>
+        <div style="width:15%">
+            <div class="flex justify-content-sapce-between" style="padding:0 15px;">
+                <label class="radio-inline">
+                    <input type="radio" name="displayType" value="Regular" [(ngModel)]="displayType" (click)="generateRegularTriageReport()"><b>Regular</b>
+                </label>
+                <label class="radio-inline">
+                    <input type="radio" name="displayType" value="Customize" [(ngModel)]="displayType"><b>Customize</b>
+                </label>
+            </div>
+        </div>
+        <div class="flex" style="width:73%;padding-left:10%" *ngIf="displayType=='Regular'">
+            <div style="width:30%">
+                <div class="flex">
+                    <label for="name" class="control-label" style="width:18%">Type: </label>
+                    <div style="width:75%">
+                        <select class="form-control" [ngModel]="reportType" (ngModelChange)="getTriageReportTimeSpans($event)">
+                            <option *ngFor="let reportType of reportTypes; trackBy: index" [value]="reportType" [innerHTML]="reportType"></option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div style="width:45%;">
+                <div class="flex">
+                    <label for="name" class="control-label" style="width:20%">TimeSpan: </label>
+                    <i class="fa fa-chevron-left text-primary pointer" style="text-align: right" (click)="getPreReport()"></i>
+                    <div style="width:65%;margin:0 3%">
+                        <select class="form-control" [ngModel]="currentRegularReportTimeSpan" (ngModelChange)="changeReportTimeSpan($event)">
+                            <option *ngFor="let reportTimeSpan of reportTimeSpans" [value]="reportTimeSpan" [innerHTML]="reportTimeSpan"></option>
+                        </select>
+                    </div>
+                    <i class="fa fa-chevron-right text-primary pointer" (click)="getNextReport()"></i>
+                </div>
+            </div>
+            <div style="width:25%;">
+                <div class="flex">
+                    <label class="control-label">DRI Name:</label>
+                    <div style="padding:0 5%">
+                        <p class="form-control-static">Alice</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="flex" style="width:70%" *ngIf="displayType=='Customize'">
+            <form class="form-Vertical form-inline" style="width:100%;padding:0 6% 0 12%" role="form">
+                <div class="flex justify-content-sapce-between">
+                    <div>
+                        <label for="name" class="control-label">Start date: </label>
+                        <div class="input-group">
+                            <div class="btn-group">
+                                <input class="form-control" style="float:none" placeholder="Start date" ngx-mydatepicker name="startDate"
+                                        [(ngModel)]="startDate" 
+                                        [options]="datePickerOptions" 
+                                        #start="ngx-mydatepicker"
+                                        autocomplete="off"/>
+                                <span class="glyphicon glyphicon-remove input-clear" (click)="start.clearDate()"></span>
+                            </div>
+                            <span class="input-group-btn">
+                                <button type="button" class="btn btn-default" (click)="start.toggleCalendar()"><i class="glyphicon glyphicon-calendar text-primary"></i></button>
+                            </span>
+                        </div>
+                    </div>
+                    <div>
+                        <label for="name" class="control-label">End date: </label>
+                        <div class="input-group">
+                            <div class="btn-group">
+                                <input class="form-control" style="float:none" placeholder="End date" ngx-mydatepicker name="endDate"
+                                    [(ngModel)]="endDate" 
+                                    [options]="datePickerOptions" 
+                                    #end="ngx-mydatepicker"
+                                    autocomplete="off"/>
+                                <span class="glyphicon glyphicon-remove input-clear" (click)="end.clearDate()"></span>
+                            </div>
+                            <span class="input-group-btn">
+                                <button type="button" class="btn btn-default" (click)="end.toggleCalendar()"><i class="glyphicon glyphicon-calendar text-primary"></i></button>
+                            </span>
+                        </div>
+                    </div>
+                    <div *ngIf="false" class="checkbox">
+                        <label>
+                            <input type="checkbox"> Email Me
+                        </label>
+                    </div>
+                    <div>
+                        <button type="button" class="btn btn-default" (click)="getLastSeveraldayReport(1)">YesterDay</button>
+                        <button type="button" class="btn btn-default" (click)="getLastSeveraldayReport(3)">Last 3 Days</button>
+                    </div>
+                    <div>
+                        <button type="button" class="btn btn-primary" (click)="generateCustomizedTriageReport()">
+                            <i class="fa fa-spinner fa-pulse fa-fw" *ngIf="isFetchingReport"></i>
+                            Generate
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<div class="report-section">
+    <div class="white-board" style="padding: 15px 1%;height: 310px;">
+        <ngx-charts-number-card
+            [view]="summaryNumberCardChart.view"
+            [scheme]="summaryNumberCardChart.scheme"
+            [results]="summaryNumberCardChart.results"
+            [cardColor]="summaryNumberCardChart.cardColor"
+            [valueFormatting]="statusValueFormat"
+            (select)="summaryCardScrollToDetail($event)">
+        </ngx-charts-number-card>
+    </div>
+</div>
+<div class="report-section">
+    <div class="flex">
+        <div class="white-board" style="width:36%;">
+            <p class="summary-title">Distribution</p>
+            <div class="flex" style="height:200px;">
+                <div style="padding-left:3%;width:24%;">
+                    <p>
+                        <span class="total-count" [innerHtml]="triageAndErrorCountDetail.totalViewCount"></span>
+                        views in total
+                    </p>
+                    <p>
+                        <b [innerHtml]="triageAndErrorCountDetail.errorCount"></b>
+                        views errored 
+                    </p>
+                    <p>
+                        <b [innerHtml]="triageAndErrorCountDetail.triageCount"></b>
+                        views triaged 
+                    </p>
+                    <p>
+                        <b [innerHtml]="triageAndErrorCountDetail.normalCount"></b>
+                        views normal 
+                    </p>
+                </div>
+                <div style="width:60%;">
+                    <ngx-charts-advanced-pie-chart 
+                        [view]="distributionPieChart.view" 
+                        [scheme]="distributionPieChart.scheme" 
+                        [results]="distributionPieChart.results"
+                        [gradient]="distributionPieChart.gradient">
+                        <ng-template #tooltipTemplate let-item="model">
+                            <p style="font-size:20px;margin:1px 0 0 0;">
+                                {{item.name}}<br>
+                                {{item.value}}
+                            </p>
+                        </ng-template>
+                    </ngx-charts-advanced-pie-chart>
+                </div>
+            </div>
+        </div>
+        <div class="white-board" style="width:60%;">
+            <p class="summary-title">Triage&nbsp;and&nbsp;Error&nbsp;Top&nbsp;Ten</p>
+            <div>
+                <div style="margin-left:3%;">
+                    <ngx-charts-bar-vertical 
+                        [view]="distributionTopTenVerticalBarChart.view" 
+                        [scheme]="distributionTopTenVerticalBarChart.scheme"
+                        [results]="distributionTopTenVerticalBarChart.results" 
+                        [gradient]="distributionTopTenVerticalBarChart.gradient"
+                        [xAxis]="distributionTopTenVerticalBarChart.xAxis" 
+                        [yAxis]="distributionTopTenVerticalBarChart.yAxis"
+                        [legendTitle]="distributionTopTenVerticalBarChart.legendTitle" 
+                        [legend]="distributionTopTenVerticalBarChart.legend"
+                        [showXAxisLabel]="distributionTopTenVerticalBarChart.showXAxisLabel" 
+                        [showYAxisLabel]="distributionTopTenVerticalBarChart.showYAxisLabel"
+                        [xAxisLabel]="distributionTopTenVerticalBarChart.xAxisLabel" 
+                        [yAxisLabel]="distributionTopTenVerticalBarChart.yAxisLabel"
+                        [animations]="distributionTopTenVerticalBarChart.animations"
+                        (select)="scrollToViewDetail($event)">
+                        <ng-template #tooltipTemplate let-item="model">
+                            <p style="font-size:16px;margin:1px 0 0 0;">
+                                {{item.name}}
+                            </p>
+                            <p style="font-size:20px;margin:1px 0 0 0;">
+                                {{item.value}}
+                            </p>
+                        </ng-template>
+                    </ngx-charts-bar-vertical>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="flex" #topVersionDuration>
+        <div class="white-board" style="width:36%;">
+            <p class="summary-title">Version&nbsp;Duration</p>
+            <div class="flex" style="height:200px;">
+                <div style="padding-left:3%;width:24%;">
+                    <p>
+                        <span class="total-count" [innerHtml]="versionDurationStageDetail.highStageViewCount"></span>
+                        views's version delay in :<br>&nbsp;&nbsp;{{versionDurationRange[2]}}
+                    </p>
+                    <p>
+                        <b [innerHtml]="versionDurationStageDetail.middleStageViewCount"></b>
+                        views's version delay in :<br>&nbsp;&nbsp;{{versionDurationRange[1]}}
+                    </p>
+                    <p>
+                        <b [innerHtml]="versionDurationStageDetail.lowStageViewCount"></b>
+                        views's version delay in :<br>&nbsp;&nbsp;{{versionDurationRange[0]}}
+                    </p>
+                </div>
+                <div style="width:60%;">
+                    <ngx-charts-advanced-pie-chart 
+                        [view]="versionDurationPieChart.view" 
+                        [scheme]="versionDurationPieChart.scheme" 
+                        [results]="versionDurationPieChart.results"
+                        [gradient]="versionDurationPieChart.gradient">
+                        <ng-template #tooltipTemplate let-item="model">
+                            <p style="font-size:20px;margin:1px 0 0 0;">
+                                {{item.name}}<br>
+                                {{versionDurationPieChart.pieChartDetailLayerValueDict.get(item.name)[0]}}
+                                ~{{versionDurationPieChart.pieChartDetailLayerValueDict.get(item.name)[1]}}
+                            </p>
+                        </ng-template>
+                    </ngx-charts-advanced-pie-chart>
+                </div>
+            </div>
+        </div>
+        <div class="white-board" style="width:60%;">
+            <p class="summary-title">Version&nbsp;Duration&nbsp;Top&nbsp;Ten</p>
+            <div>
+                <div style="margin-left:3%;">
+                    <ngx-charts-bar-vertical 
+                        [view]="versionDurationTopTenVerticalBarChart.view" 
+                        [scheme]="versionDurationTopTenVerticalBarChart.scheme"
+                        [results]="versionDurationTopTenVerticalBarChart.results" 
+                        [gradient]="versionDurationTopTenVerticalBarChart.gradient"
+                        [xAxis]="versionDurationTopTenVerticalBarChart.xAxis" 
+                        [yAxis]="versionDurationTopTenVerticalBarChart.yAxis"
+                        [legendTitle]="versionDurationTopTenVerticalBarChart.legendTitle" 
+                        [legend]="versionDurationTopTenVerticalBarChart.legend"
+                        [showXAxisLabel]="versionDurationTopTenVerticalBarChart.showXAxisLabel" 
+                        [showYAxisLabel]="versionDurationTopTenVerticalBarChart.showYAxisLabel"
+                        [xAxisLabel]="versionDurationTopTenVerticalBarChart.xAxisLabel" 
+                        [yAxisLabel]="versionDurationTopTenVerticalBarChart.yAxisLabel"
+                        [animations]="versionDurationTopTenVerticalBarChart.animations"
+                        (select)="scrollToViewDetail($event)">
+                        <ng-template #tooltipTemplate let-item="model">
+                            <p style="font-size:16px;margin:1px 0 0 0;">
+                                {{item.name}}
+                            </p>
+                            <p style="font-size:20px;margin:1px 0 0 0;">
+                                {{item.value}}
+                            </p>
+                        </ng-template>
+                    </ngx-charts-bar-vertical>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="flex" #topCommitDuration>
+        <div class="white-board" style="width:36%;">
+            <p class="summary-title">Commit&nbsp;Duration</p>
+            <div class="flex" style="height:200px;">
+                <div style="padding-left:3%;width:24%;">
+                    <p>
+                        <span class="total-count" [innerHtml]="commitDurationStageDetail.highStageViewCount"></span>
+                        views's commit delay in :<br>&nbsp;&nbsp;{{commitDurationRange[2]}}
+                    </p>
+                    <p>
+                        <b [innerHtml]="commitDurationStageDetail.middleStageViewCount"></b>
+                        views's commit delay in :<br>&nbsp;&nbsp;{{commitDurationRange[1]}}
+                    </p>
+                    <p>
+                        <b [innerHtml]="commitDurationStageDetail.lowStageViewCount"></b>
+                        views's commit delay in :<br>&nbsp;&nbsp;{{commitDurationRange[0]}}
+                    </p>
+                </div>
+                <div style="width:60%;">
+                    <ngx-charts-advanced-pie-chart 
+                        [view]="commitDurationPieChart.view" 
+                        [scheme]="commitDurationPieChart.scheme" 
+                        [results]="commitDurationPieChart.results"
+                        [gradient]="commitDurationPieChart.gradient">
+                        <ng-template #tooltipTemplate let-item="model">
+                            <p style="font-size:20px;margin:1px 0 0 0;">
+                                {{item.name}}<br>
+                                {{commitDurationPieChart.pieChartDetailLayerValueDict.get(item.name)[0]}}
+                                ~{{commitDurationPieChart.pieChartDetailLayerValueDict.get(item.name)[1]}}
+                            </p>
+                        </ng-template>
+                    </ngx-charts-advanced-pie-chart>
+                </div>
+            </div>
+        </div>
+        <div class="white-board" style="width:60%;">
+            <p class="summary-title">Commit&nbsp;Duration&nbsp;Top&nbsp;Ten</p>
+            <div>
+                <div style="margin-left:3%;">
+                    <ngx-charts-bar-vertical 
+                        [view]="commitDurationTopTenVerticalBarChart.view" 
+                        [scheme]="commitDurationTopTenVerticalBarChart.scheme"
+                        [results]="commitDurationTopTenVerticalBarChart.results" 
+                        [gradient]="commitDurationTopTenVerticalBarChart.gradient"
+                        [xAxis]="commitDurationTopTenVerticalBarChart.xAxis" 
+                        [yAxis]="commitDurationTopTenVerticalBarChart.yAxis"
+                        [legendTitle]="commitDurationTopTenVerticalBarChart.legendTitle" 
+                        [legend]="commitDurationTopTenVerticalBarChart.legend"
+                        [showXAxisLabel]="commitDurationTopTenVerticalBarChart.showXAxisLabel" 
+                        [showYAxisLabel]="commitDurationTopTenVerticalBarChart.showYAxisLabel"
+                        [xAxisLabel]="commitDurationTopTenVerticalBarChart.xAxisLabel" 
+                        [yAxisLabel]="commitDurationTopTenVerticalBarChart.yAxisLabel"
+                        [animations]="commitDurationTopTenVerticalBarChart.animations"
+                        (select)="scrollToViewDetail($event)">
+                        <ng-template #tooltipTemplate let-item="model">
+                            <p style="font-size:16px;margin:1px 0 0 0;">
+                                {{item.name}}
+                            </p>
+                            <p style="font-size:20px;margin:1px 0 0 0;">
+                                {{item.value}}
+                            </p>
+                        </ng-template>
+                    </ngx-charts-bar-vertical>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="white-board" style="height:600px;">
+        <p class="summary-title">Daily&nbsp;Count</p>
+        <div>
+            <ngx-charts-line-chart
+                [view]="totalLineChart.view"
+                [scheme]="totalLineChart.scheme"
+                [results]="totalLineChart.results"
+                [gradient]="totalLineChart.gradient"
+                [xAxis]="totalLineChart.xAxis"
+                [yAxis]="totalLineChart.yAxis"
+                [legend]="totalLineChart.legend"
+                [showXAxisLabel]="totalLineChart.showXAxisLabel"
+                [showYAxisLabel]="totalLineChart.showYAxisLabel"
+                [xAxisLabel]="totalLineChart.xAxisLabel"
+                [yAxisLabel]="totalLineChart.yAxisLabel"
+                [autoScale]="totalLineChart.autoScale">
+                <ng-template #tooltipTemplate let-item="model">
+                    <p style="font-size:20px;margin:1px 0 0 0;">{{item.name}}</p>
+                    <ol style="text-align:left">
+                        <li *ngFor="let t of totalLineChart.lineChartDetailDict.get(item.name+item.series); trackBy: index">
+                            {{t}}<br>
+                        </li>
+                    </ol>
+                </ng-template>
+                <ng-template #seriesTooltipTemplate let-items="model">
+                    <p style="font-size:20px;margin:1px 0 0 0;">{{items[0].name}}</p>
+                    <div *ngFor="let item of items; trackBy: index">
+                        <div *ngIf="totalLineChart.lineChartDetailDict.get(item.name+item.series).size!=0">
+                            <p style="font-size:20px;margin:1px 0 0 0;">{{item.series}}({{totalLineChart.lineChartDetailDict.get(item.name+item.series).size}})</p>
+                            <ol style="text-align:left">
+                                <li *ngFor="let t of totalLineChart.lineChartDetailDict.get(item.name+item.series); trackBy: index">
+                                    {{t}}<br>
+                                </li>
+                            </ol>
+                        </div>
+                    </div>
+                </ng-template>
+            </ngx-charts-line-chart>
+        </div>
+    </div>
+</div>
+<div style="padding:1.6%;">
+    <div class="panel panel-primary">
+        <div class="panel-heading">
+            <h3 class="panel-title">Detail</h3>
+        </div>
+        <div class="panel-body" #viewTable>
+            <table class="table">
+                <thead>
+                    <th></th>
+                    <th>Id</th>
+                    <th>Name</th>
+                    <th>ViewState</th>
+                    <th>Segment</th>
+                    <th>Owner</th>
+                </thead>
+                <tbody *ngFor="let triageViewSupervisor of triageViewSupervisors; trackBy: index">
+                    <tr [id]="triageViewSupervisor.id">
+                        <th class="text-primary" (click)="expandStatistic(triageViewSupervisor)">
+                            <i [ngClass]="triageViewSupervisor.expandStatistic ? 'fa fa-chevron-up': 'fa fa-chevron-down'"></i>
+                        </th>
+                        <th [innerHTML]="triageViewSupervisor.id"></th>
+                        <th>
+                            <a target="_blank" [href]="triageViewSupervisor.entitySpaceViewUrl" [innerHTML]="triageViewSupervisor.entitySpaceViewName"></a>
+                        </th>
+                        <th [innerHTML]="triageViewSupervisor.viewState"></th>
+                        <th [innerHTML]="triageViewSupervisor.segment"></th>
+                        <th [innerHTML]="triageViewSupervisor.owner"></th>
+                    </tr>
+                    <tr *ngIf="triageViewSupervisor.expandStatistic">
+                        <td colspan="13">
+                            <triage-view-statistic [triageViewSupervisor]="triageViewSupervisor">
+                            </triage-view-statistic>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div> -->

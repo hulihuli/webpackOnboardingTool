@@ -1,0 +1,1115 @@
+<div class="report-infobar container-fuild">
+    <div class="flex row">
+        <div class="col-md-2">
+            <b class="report-infobar-title">&nbsp;Report</b>
+        </div>
+        <!-- diaplay type -->
+        <div class="col-md-3 text-center">
+            <label class="radio-inline">
+                <input type="radio"
+                        name="displayType"
+                        value="Regular"
+                        [(ngModel)]="displayType"
+                        (click)="generateRegularTriageReport()">
+                <b>Regular</b>
+            </label>
+            <label class="radio-inline">
+                <input type="radio"
+                        name="displayType"
+                        value="Customize"
+                        [(ngModel)]="displayType"
+                        (click)="generateCustomizedTriageReport()">
+                <b>Customize</b>
+            </label>
+        </div>
+        <!-- regular type -->
+        <div class="col-md-7 form-inline flex justify-content-space-between" *ngIf="displayType == 'Regular'">
+            <div class="form-group">
+                <label for="type">Type: </label>
+                <select class="form-control"
+                        [ngModel]="reportType"
+                        (ngModelChange)="getTriageReportTimeSpansByReportType($event)">
+                    <option *ngFor="let reportType of reportTypes; trackBy: index"
+                            [value]="reportType"
+                            [innerHTML]="reportType"></option>
+                </select>
+                <label for="timespan">TimeSpan: </label>
+                <i class="fa fa-chevron-left text-primary pointer" [ngClass]="{'disabled': !enablePrevCaret}" style="text-align: right" (click)="getPreReport()"></i>
+                <select class="form-control"
+                        [ngModel]="currentRegularReportTimeSpan"
+                        (ngModelChange)="changeReportTimeSpan($event)">
+                    <option *ngFor="let reportTimeSpan of reportTimeSpans"
+                            [value]="reportTimeSpan"
+                            [innerHTML]="reportTimeSpan"></option>
+                </select>
+                <i class="fa fa-chevron-right text-primary pointer" [ngClass]="{'disabled': !enableNextCaret}" (click)="getNextReport()"></i>
+            </div>
+            <div class="form-group mr-18">
+                <label for="driname">DRI Name:</label>
+                <b class="form-control-static">Alice</b>
+            </div>
+        </div>
+        <!-- Customized report -->
+        <div class="col-md-7" *ngIf="displayType == 'Customize'">
+            <form class="form-inline">
+                <div class="form-group">
+                    <div class="form-group">
+                        <label for="starDate">Start date: </label>
+                        <div class="input-group">
+                            <div class="btn-group">
+                                <input class="form-control"
+                                        style="float:none"
+                                        placeholder="Start date"
+                                        ngx-mydatepicker
+                                        name="startDate"
+                                        [(ngModel)]="customizeStartDate"
+                                        [options]="datePickerOptions"
+                                        #start="ngx-mydatepicker"
+                                        autocomplete="off" />
+                                <span class="glyphicon glyphicon-remove input-clear"
+                                        (click)="start.clearDate()"></span>
+                            </div>
+                            <span class="input-group-btn">
+                                <button type="button"
+                                        class="btn btn-default"
+                                        (click)="start.toggleCalendar()">
+                                    <i class="glyphicon glyphicon-calendar text-primary"></i>
+                                </button>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="endDate">End date: </label>
+                        <div class="input-group">
+                            <div class="btn-group">
+                                <input class="form-control"
+                                        style="float:none"
+                                        placeholder="End date"
+                                        ngx-mydatepicker
+                                        name="endDate"
+                                        [(ngModel)]="customizeEndDate"
+                                        [options]="datePickerOptions"
+                                        #end="ngx-mydatepicker"
+                                        autocomplete="off" />
+                                <span class="glyphicon glyphicon-remove input-clear"
+                                        (click)="end.clearDate()"></span>
+                            </div>
+                            <span class="input-group-btn">
+                                <button type="button"
+                                        class="btn btn-default"
+                                        (click)="end.toggleCalendar()">
+                                    <i class="glyphicon glyphicon-calendar text-primary"></i>
+                                </button>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div *ngIf="false"
+                        class="checkbox">
+                    <label>
+                        <input type="checkbox"> Email Me
+                    </label>
+                </div>
+                <div class="form-group">
+                    <button type="button"
+                            class="btn btn-default"
+                            (click)="getLastSeveraldayReport(1)">YesterDay</button>
+                    <button type="button"
+                            class="btn btn-default"
+                            (click)="getLastSeveraldayReport(3)">Last 3 Days</button>
+                </div>
+                <div class="form-group">
+                    <label class="checkbox-inline"><input type="checkbox"  [(ngModel)]="forceGenerate" name="forceGenerate">force</label>
+                    <button type="button"
+                            class="btn btn-primary"
+                            (click)="generateCustomizedTriageReport()">
+                        <i class="fa fa-spinner fa-pulse fa-fw"
+                            *ngIf="isFetchingReport"></i>
+                        Generate
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<br/>
+
+<!-- report content -->
+<div style="font-size:24px;">
+    <span *ngIf="!existingRegularReport && displayType=='Regular'">&emsp;There is no regular report!</span>
+    <span *ngIf="!existingCustomizedReport && displayType=='Customize'">&emsp;There's no report existing in this customized timespan!</span>
+</div>
+<div *ngIf="currentReport && (existingRegularReport && displayType=='Regular' || existingCustomizedReport && displayType=='Customize')">
+    <div class="white-board" style="height:100px">
+        <table class="table" style="font-size:16px;">
+            <thead>
+                <tr>
+                    <th style="width:15%;text-align:right">Miss SLA Views</th>
+                    <th class="text-primary" style="text-align:center"> | </th>
+                    <th style="width:15%;text-align:left">Miss SLA Times</th>
+
+                    <th style="width:15%;text-align:right">Error Views</th>
+                    <th class="text-primary" style="text-align:center"> | </th>
+                    <th style="width:15%;text-align:left">Error Times</th>
+
+                    <th style="width:15%;text-align:right">Triaged Views</th>
+                    <th class="text-primary" style="text-align:center"> | </th>
+                    <th style="width:15%;text-align:left">Triaged Times</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td style="text-align:right; padding:15px 0;">
+                        <b>{{triageReportSummary.currentMissSLAViewsPercent}}%
+                            <span style="font-size:12px;">
+                                (<a class="pointer"
+                                    [innerHtml]="missSlaSummary.missSlaViewCount +' Views'"
+                                    (click)="getModalSupervisors(missSlaSummary.allMissSlaViewIds)"
+                                    data-toggle="modal"
+                                    data-target="#ViewsDetailList">
+                                </a>/{{allViewCount}})
+                            </span>
+                        </b>
+                    </td>
+                    <td>
+                    </td>
+                    <td style="text-align:left; padding:15px 0;">
+                        <b *ngIf="triageReportSummary.allRefreshTimes!=0">{{missSlaSummary.currentMissSLATimesPercent(missSlaSummary,triageReportSummary)}}%
+                            (<span style="font-size:12px;">
+                                {{missSlaSummary.missSlaTimes}} / {{triageReportSummary.allRefreshTimes}}
+                            </span>)
+                        </b>
+                        <b *ngIf="triageReportSummary.allRefreshTimes==0"> {{missSlaSummary.missSlaTimes}}</b>
+                    </td>          
+                    <td style="text-align:right; padding:15px 0;">
+                        <b>{{triageReportSummary.currentErrorViewsPercent}}%
+                            <span style="font-size:12px;">
+                                (<a class="pointer"
+                                    [innerHtml]="errorSummary.errorViewCount +' Views'"
+                                    (click)="getModalSupervisors(errorSummary.allErrorViewIds)"
+                                    data-toggle="modal"
+                                    data-target="#ViewsDetailList">
+                                </a>/{{allViewCount}})
+                            </span>
+                        </b>
+                    </td>
+                    <td>
+                    </td>
+                    <td style="text-align:left; padding:15px 0;">
+                        <b *ngIf="triageReportSummary.allRefreshTimes!=0">{{errorSummary.currentErrorTimesPercent(errorSummary,triageReportSummary)}}%
+                            (<span style="font-size:12px;">
+                                {{errorSummary.errorTimes}} / {{triageReportSummary.allRefreshTimes}}
+                            </span>)
+                        </b>
+                        <b *ngIf="triageReportSummary.allRefreshTimes==0"> {{errorSummary.errorTimes}}</b>
+                    </td>
+                    <td style="text-align:right; padding:15px 0;">
+                        <b>{{triageReportSummary.currentTriagedViewsPercent}}%
+                            <span style="font-size:12px;">
+                                (<a class="pointer"
+                                    [innerHtml]="triageSummary.triageViewCount +' Views'"
+                                    (click)="getModalSupervisors(triageSummary.allTriageViewIds)"
+                                    data-toggle="modal"
+                                    data-target="#ViewsDetailList">
+                                </a>/{{allViewCount}})
+                            </span>
+                        </b>
+                    </td>
+                    <td>
+                    </td>
+                    <td style="text-align:left; padding:15px 0;">
+                        <b *ngIf="triageReportSummary.allRefreshTimes!=0">{{triageSummary.currentTriagedTimesPercent(triageSummary,triageReportSummary)}}%
+                            (<span style="font-size:12px;">
+                                {{triageSummary.triageTimes}} / {{triageReportSummary.allRefreshTimes}}
+                            </span>)
+                        </b>
+                        <b *ngIf="triageReportSummary.allRefreshTimes==0"> {{triageSummary.triageTimes}}</b>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="white-board">
+        <div class="container-fluid daliy-chart">
+            <ul class="nav nav-pills nav-stacked col-md-2">
+                <li class="active"><a data-toggle="pill" (click)="changeViewVersion('EveryVersion')">EveryVersion</a></li>
+                <li><a data-toggle="pill" (click)="changeViewVersion('MajorVersion')">MajorVersion</a></li>
+                <li><a data-toggle="pill" (click)="changeViewVersion('Manual')">Manual</a></li>
+            </ul>
+            <div class="tab-content col-md-10">
+                <div class="tab-pane active in active" style="height:420px;">
+                    <ngx-charts-line-chart
+                        [scheme]="viewVersionMetriLineChart.scheme"
+                        [results]="viewVersionMetriLineChart.results"
+                        [legendTitle]="viewVersionMetriLineChart.legendTitle"
+                        [gradient]="viewVersionMetriLineChart.gradient"
+                        [xAxis]="viewVersionMetriLineChart.xAxis"
+                        [yAxis]="viewVersionMetriLineChart.yAxis"
+                        [legend]="viewVersionMetriLineChart.legend"
+                        [showXAxisLabel]="viewVersionMetriLineChart.showXAxisLabel"
+                        [showYAxisLabel]="viewVersionMetriLineChart.showYAxisLabel"
+                        [xAxisLabel]="viewVersionMetriLineChart.xAxisLabel"
+                        [yAxisLabel]="viewVersionMetriLineChart.yAxisLabel">
+                        <ng-template #tooltipTemplate let-item="model">
+                            <p style="font-size:20px;margin:1px 0 0 0;"> {{item.series}}</p>
+                            <ol style="text-align:left">
+                                <li>
+                                    shortDate: {{item.name}}
+                                </li>
+                                <li>
+                                    viewCount: {{(viewVersionMetriLineChart.lineChartDetailDict.get(item.name+item.series)).viewCount}}
+                                </li>
+                                <li *ngIf="item.series=='missSla'">
+                                    {{item.series}} percent: {{missSlaPercent}}
+                                </li>
+                                 <li *ngIf="item.series=='triage'">
+                                    {{item.series}} percent: {{triagePercent}}
+                                </li>
+                                 <li *ngIf="item.series=='error'">
+                                    {{item.series}} percent: {{errorPercent}}
+                                </li>
+                            </ol>
+                        </ng-template>
+                    </ngx-charts-line-chart>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div style="padding:15px 10px 25px 10px">
+        <ul class="nav nav-tabs" style="font-size:16px;">
+            <li class="active">
+                <a data-toggle="tab"
+                    href="#SLA"><b>SLA</b></a>
+            </li>
+            <li>
+                <a data-toggle="tab"
+                    href="#Triage"><b>Triage</b></a>
+            </li>
+            <li>
+                <a data-toggle="tab"
+                    href="#Error"><b>Error</b></a>
+            </li>
+            <li>
+                <a data-toggle="tab"
+                    href="#LongToGraph"><b>LongToGraph</b></a>
+            </li>
+            <li>
+                <a data-toggle="tab"
+                    href="#Rank"><b>Summary</b></a>
+            </li>
+        </ul>
+        <div class="tab-content">
+            <div id="SLA" class="tab-pane fade in active bg-white pd-20">
+                <table class="table table-bordered ft-16 text-center">
+                    <thead>
+                        <tr class="bg-primary">
+                            <th>Update Frequency</th>
+                            <th>SLA</th>
+                            <th>Number of Views Missed</th>
+                            <th colspan="2">Root Cause Breakdown</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td rowspan="6">EveryVersion</td>
+                            <td rowspan="6">{{everyVersionLimit}} hrs</td>
+                            <td rowspan="6">
+                                <b>{{missSlaSummary.everyVersion.missSlaViewsPercent}}%</b>
+                                <small title="Miss SLA Views / Total Views">
+                                    (<a class="pointer"
+                                        [innerHtml]="missSlaSummary.everyVersion.allViewIds.length + ' Views'"
+                                        (click)="getModalSupervisors(missSlaSummary.everyVersion.allViewIds)"
+                                        data-toggle="modal"
+                                        data-target="#ViewsDetailList">
+                                    </a> / {{missSlaSummary.everyVersion.stateCount}})
+                                </small>
+                                &emsp;&emsp;|&emsp;&emsp; 
+                                <b *ngIf="triageReportSummary.everyVersionRefreshtimes!=0">{{missSlaSummary.everyVersion.missSlaEveryVersionPercent(missSlaSummary.everyVersion,triageReportSummary)}}%</b>
+                                <small *ngIf="triageReportSummary.everyVersionRefreshtimes!=0" title="Miss SLA Times / Total Update Times">
+                                    ({{missSlaSummary.everyVersion.missSlaTimes}} Times / {{triageReportSummary.everyVersionRefreshtimes}})
+                                </small>
+                                <small *ngIf="triageReportSummary.everyVersionRefreshtimes==0">{{missSlaSummary.everyVersion.missSlaTimes}} Times</small>
+                            </td>
+                            <td rowspan="4">Succeed : 
+                                <a class="pointer"
+                                    [innerHtml]="missSlaSummary.everyVersion.succeedViewCount +' Views'"
+                                    (click)="getModalSupervisors(missSlaSummary.everyVersion.rootCauseToSucceedIds.allIds)"
+                                    data-toggle="modal"
+                                    data-target="#ViewsDetailList">
+                                </a>
+                            </td>
+                            <td>Long Queue : 
+                                <a class="pointer"
+                                    [innerHtml]="missSlaSummary.everyVersion.rootCauseToSucceedIds.longQueueCount +' Views'"
+                                    (click)="getModalSupervisors(missSlaSummary.everyVersion.rootCauseToSucceedIds.longQueueIds)"
+                                    data-toggle="modal"
+                                    data-target="#ViewsDetailList">
+                                </a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Long Running : 
+                                <a class="pointer"
+                                    [innerHtml]="missSlaSummary.everyVersion.rootCauseToSucceedIds.longRunningCount +' Views'"
+                                    (click)="getModalSupervisors(missSlaSummary.everyVersion.rootCauseToSucceedIds.longRunningIds)"
+                                    data-toggle="modal"
+                                    data-target="#ViewsDetailList">
+                                </a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Triage : 
+                                <a class="pointer"
+                                    [innerHtml]="missSlaSummary.everyVersion.rootCauseToSucceedIds.triageCount +' Views'"
+                                    (click)="getModalSupervisors(missSlaSummary.everyVersion.rootCauseToSucceedIds.triageIds)"
+                                    data-toggle="modal"
+                                    data-target="#ViewsDetailList">
+                                </a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Unknow : 
+                                <a class="pointer"
+                                    [innerHtml]="missSlaSummary.everyVersion.rootCauseToSucceedIds.unknowCount +' Views'"
+                                    (click)="getModalSupervisors(missSlaSummary.everyVersion.rootCauseToSucceedIds.unknowIds)"
+                                    data-toggle="modal"
+                                    data-target="#ViewsDetailList">
+                                </a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td rowspan="2">Failed : 
+                                <a class="pointer"
+                                    [innerHtml]="missSlaSummary.everyVersion.failedViewCount +' Views'"
+                                    (click)="getModalSupervisors(missSlaSummary.everyVersion.rootCauseToFailedIds.allIds)"
+                                    data-toggle="modal"
+                                    data-target="#ViewsDetailList">
+                                </a>
+                            </td>
+                            <td>Triage : 
+                                <a class="pointer"
+                                    [innerHtml]="missSlaSummary.everyVersion.rootCauseToFailedIds.triageCount +' Views'"
+                                    (click)="getModalSupervisors(missSlaSummary.everyVersion.rootCauseToFailedIds.triageIds)"
+                                    data-toggle="modal"
+                                    data-target="#ViewsDetailList">
+                                </a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Error : 
+                                <a class="pointer"
+                                    [innerHtml]="missSlaSummary.everyVersion.rootCauseToFailedIds.errorCount +' Views'"
+                                    (click)="getModalSupervisors(missSlaSummary.everyVersion.rootCauseToFailedIds.errorIds)"
+                                    data-toggle="modal"
+                                    data-target="#ViewsDetailList">
+                                </a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td rowspan="6">MajorVersion</td>
+                            <td rowspan="6">{{majorVersionLimit}} hrs</td>
+                            <td rowspan="6">
+                                <b>{{missSlaSummary.majorVersion.missSlaViewsPercent}}%</b>
+                                <small title="Miss SLA Views / Total Views">
+                                    (<a class="pointer"
+                                        [innerHtml]="missSlaSummary.majorVersion.allViewIds.length + ' Views'"
+                                        (click)="getModalSupervisors(missSlaSummary.majorVersion.allViewIds)"
+                                        data-toggle="modal"
+                                        data-target="#ViewsDetailList">
+                                    </a> / {{missSlaSummary.majorVersion.stateCount}})
+                                </small>
+                                 &emsp;&emsp;|&emsp;&emsp;
+                                <b *ngIf="triageReportSummary.majorVersionRefreshtimes!=0">{{missSlaSummary.majorVersion.missSlaMajorVersionPercent(missSlaSummary.majorVersion,triageReportSummary)}}%</b>
+                                <small *ngIf="triageReportSummary.majorVersionRefreshtimes!=0" title="Miss SLA Times / Total Update Times">
+                                    ({{missSlaSummary.majorVersion.missSlaTimes}} Times / {{triageReportSummary.majorVersionRefreshtimes}})
+                                </small>
+                                <small *ngIf="triageReportSummary.majorVersionRefreshtimes==0">{{missSlaSummary.majorVersion.missSlaTimes}} Times</small>
+                            </td>
+                            <td rowspan="4">Succeed : 
+                                <a class="pointer"
+                                    [innerHtml]="missSlaSummary.majorVersion.succeedViewCount +' Views'"
+                                    (click)="getModalSupervisors(missSlaSummary.majorVersion.rootCauseToSucceedIds.allIds)"
+                                    data-toggle="modal"
+                                    data-target="#ViewsDetailList">
+                                </a>
+                            </td>
+                            <td>Long Queue : 
+                                <a class="pointer"
+                                    [innerHtml]="missSlaSummary.majorVersion.rootCauseToSucceedIds.longQueueCount +' Views'"
+                                    (click)="getModalSupervisors(missSlaSummary.majorVersion.rootCauseToSucceedIds.longQueueIds)"
+                                    data-toggle="modal"
+                                    data-target="#ViewsDetailList">
+                                </a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Long Running : 
+                                <a class="pointer"
+                                    [innerHtml]="missSlaSummary.majorVersion.rootCauseToSucceedIds.longRunningCount +' Views'"
+                                    (click)="getModalSupervisors(missSlaSummary.majorVersion.rootCauseToSucceedIds.longRunningIds)"
+                                    data-toggle="modal"
+                                    data-target="#ViewsDetailList">
+                                </a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Triage : 
+                                <a class="pointer"
+                                    [innerHtml]="missSlaSummary.majorVersion.rootCauseToSucceedIds.triageCount +' Views'"
+                                    (click)="getModalSupervisors(missSlaSummary.majorVersion.rootCauseToSucceedIds.triageIds)"
+                                    data-toggle="modal"
+                                    data-target="#ViewsDetailList">
+                                </a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Unknow : 
+                                <a class="pointer"
+                                    [innerHtml]="missSlaSummary.majorVersion.rootCauseToSucceedIds.unknowCount +' Views'"
+                                    (click)="getModalSupervisors(missSlaSummary.majorVersion.rootCauseToSucceedIds.unknowIds)"
+                                    data-toggle="modal"
+                                    data-target="#ViewsDetailList">
+                                </a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td rowspan="2">Failed : 
+                                <a class="pointer"
+                                    [innerHtml]="missSlaSummary.majorVersion.failedViewCount +' Views'"
+                                    (click)="getModalSupervisors(missSlaSummary.majorVersion.rootCauseToFailedIds.allIds)"
+                                    data-toggle="modal"
+                                    data-target="#ViewsDetailList">
+                                </a>
+                            </td>
+                            <td>Triage : 
+                                <a class="pointer"
+                                    [innerHtml]="missSlaSummary.majorVersion.rootCauseToFailedIds.triageCount +' Views'"
+                                    (click)="getModalSupervisors(missSlaSummary.majorVersion.rootCauseToFailedIds.triageIds)"
+                                    data-toggle="modal"
+                                    data-target="#ViewsDetailList">
+                                </a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Error : 
+                                <a class="pointer"
+                                    [innerHtml]="missSlaSummary.majorVersion.rootCauseToFailedIds.errorCount +' Views'"
+                                    (click)="getModalSupervisors(missSlaSummary.majorVersion.rootCauseToFailedIds.errorIds)"
+                                    data-toggle="modal"
+                                    data-target="#ViewsDetailList">
+                                </a>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td rowspan="6">Manual</td>
+                            <td rowspan="6">{{manualLimit}} hrs</td>
+                            <td rowspan="6">
+                                <b>{{missSlaSummary.manual.missSlaViewsPercent}}%</b>
+                                <small title="Miss SLA Views / Total Views">
+                                    (<a class="pointer"
+                                        [innerHtml]="missSlaSummary.manual.allViewIds.length + ' Views'"
+                                        (click)="getModalSupervisors(missSlaSummary.manual.allViewIds)"
+                                        data-toggle="modal"
+                                        data-target="#ViewsDetailList">
+                                    </a> / {{missSlaSummary.manual.stateCount}})
+                                </small>    
+                                <b *ngIf="triageReportSummary.manualRefreshtimes!=0">{{missSlaSummary.manual.missSlaManualPercent(missSlaSummary.manual,triageReportSummary)}}%</b>
+                                <small *ngIf="triageReportSummary.manualRefreshtimes!=0" title="Miss SLA Times / Total Update Times">
+                                    ({{missSlaSummary.manual.missSlaTimes}} Times / {{triageReportSummary.manualRefreshtimes}})
+                                </small>
+                                <small *ngIf="triageReportSummary.manualRefreshtimes==0">{{missSlaSummary.manual.missSlaTimes}} Times</small>
+                            </td>
+                            <td rowspan="4">Succeed : 
+                                <a class="pointer"
+                                    [innerHtml]="missSlaSummary.manual.succeedViewCount +' Views'"
+                                    (click)="getModalSupervisors(missSlaSummary.manual.rootCauseToSucceedIds.allIds)"
+                                    data-toggle="modal"
+                                    data-target="#ViewsDetailList">
+                                </a>
+                            </td>
+                            <td>Long Queue : 
+                                <a class="pointer"
+                                    [innerHtml]="missSlaSummary.manual.rootCauseToSucceedIds.longQueueCount +' Views'"
+                                    (click)="getModalSupervisors(missSlaSummary.manual.rootCauseToSucceedIds.longQueueIds)"
+                                    data-toggle="modal"
+                                    data-target="#ViewsDetailList">
+                                </a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Long Running : 
+                                <a class="pointer"
+                                    [innerHtml]="missSlaSummary.manual.rootCauseToSucceedIds.longRunningCount +' Views'"
+                                    (click)="getModalSupervisors(missSlaSummary.manual.rootCauseToSucceedIds.longRunningIds)"
+                                    data-toggle="modal"
+                                    data-target="#ViewsDetailList">
+                                </a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Triage : 
+                                <a class="pointer"
+                                    [innerHtml]="missSlaSummary.manual.rootCauseToSucceedIds.triageCount +' Views'"
+                                    (click)="getModalSupervisors(missSlaSummary.manual.rootCauseToSucceedIds.triageIds)"
+                                    data-toggle="modal"
+                                    data-target="#ViewsDetailList">
+                                </a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Unknow : 
+                                <a class="pointer"
+                                    [innerHtml]="missSlaSummary.manual.rootCauseToSucceedIds.unknowCount +' Views'"
+                                    (click)="getModalSupervisors(missSlaSummary.manual.rootCauseToSucceedIds.unknowIds)"
+                                    data-toggle="modal"
+                                    data-target="#ViewsDetailList">
+                                </a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td rowspan="2">Failed : 
+                                <a class="pointer"
+                                    [innerHtml]="missSlaSummary.manual.failedViewCount +' Views'"
+                                    (click)="getModalSupervisors(missSlaSummary.manual.rootCauseToFailedIds.allIds)"
+                                    data-toggle="modal"
+                                    data-target="#ViewsDetailList">
+                                </a>
+                            </td>
+                            <td>Triage : 
+                                <a class="pointer"
+                                    [innerHtml]="missSlaSummary.manual.rootCauseToFailedIds.triageCount +' Views'"
+                                    (click)="getModalSupervisors(missSlaSummary.manual.rootCauseToFailedIds.triageIds)"
+                                    data-toggle="modal"
+                                    data-target="#ViewsDetailList">
+                                </a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Error : 
+                                <a class="pointer"
+                                    [innerHtml]="missSlaSummary.manual.rootCauseToFailedIds.errorCount +' Views'"
+                                    (click)="getModalSupervisors(missSlaSummary.manual.rootCauseToFailedIds.errorIds)"
+                                    data-toggle="modal"
+                                    data-target="#ViewsDetailList">
+                                 </a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <!--triage table-->
+            <div id="Triage" class="tab-pane fade bg-white pd-20">
+                <table class="table table-bordered ft-16 text-center">
+                    <thead>
+                        <tr class="bg-primary">
+                            <th>ViewState</th>
+                            <th>Number</th>
+                            <th colspan="2">Commit of Triaged Version</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td rowspan="2" style="width:22%;">EveryVersion</td>
+                            <td rowspan="2" width="25%" class="vertical-middle pd-8">
+                                <b>{{triageSummary.everyVersion.triageViewsPercent}}%</b>
+                                <small title="Triage Views / Total Views">
+                                    (<a [innerHtml]="triageSummary.everyVersion.allViewIds.length + ' Views'"
+                                    class="pointer"
+                                    (click)="getModalSupervisors(triageSummary.everyVersion.allViewIds)"
+                                    data-toggle="modal"
+                                    data-target="#ViewsDetailList">
+                                    </a> / {{triageSummary.everyVersion.stateCount}})
+                                </small>
+                                &emsp;&emsp;|&emsp;&emsp; 
+                                <b *ngIf="triageReportSummary.everyVersionRefreshtimes!=0">{{triageSummary.everyVersion.triageEveryVersionPercent(triageSummary.everyVersion,triageReportSummary)}}%</b>
+                                <small *ngIf="triageReportSummary.everyVersionRefreshtimes!=0" title="Triage Times / Total Update Times">
+                                    ({{triageSummary.everyVersion.triageTimes}} Times / {{triageReportSummary.everyVersionRefreshtimes}})
+                                </small>
+                                <small *ngIf="triageReportSummary.everyVersionRefreshtimes==0">{{triageSummary.everyVersion.triageTimes}} Times</small>
+                            </td>
+                            <td colspan="2">Uncommited : 
+                                <a [innerHtml]="triageSummary.everyVersion.uncommitedIds.length + ' Views'"
+                                    class="pointer"
+                                    (click)="getModalSupervisors(triageSummary.everyVersion.uncommitedIds)"
+                                    data-toggle="modal"
+                                    data-target="#ViewsDetailList">
+                                </a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Commited : 
+                                <a [innerHtml]="triageSummary.everyVersion.commitedIds.length + ' Views'"
+                                    class="pointer"
+                                    (click)="getModalSupervisors(triageSummary.everyVersion.commitedIds)"
+                                    data-toggle="modal"
+                                    data-target="#ViewsDetailList">
+                                </a>
+                            </td>
+                            <td>Average Commit Duration : {{triageSummary.everyVersion.aveLatency}}<small *ngIf="triageSummary.everyVersion.aveLatency > 0">hrs</small></td>
+                        </tr>
+                        <tr>
+                            <td rowspan="2">MajorVersion</td>
+                            <td rowspan="2" width="25%" class="vertical-middle pd-8">
+                                <b>{{triageSummary.majorVersion.triageViewsPercent}}%</b>
+                                <small title="Triage Views / Total Views">
+                                    (<a [innerHtml]="triageSummary.majorVersion.allViewIds.length + ' Views'"
+                                    class="pointer"
+                                    (click)="getModalSupervisors(triageSummary.majorVersion.allViewIds)"
+                                    data-toggle="modal"
+                                    data-target="#ViewsDetailList">
+                                    </a> / {{triageSummary.majorVersion.stateCount}})
+                                </small>
+                                &emsp;&emsp;|&emsp;&emsp;
+                                <b *ngIf="triageReportSummary.majorVersionRefreshtimes!=0">{{triageSummary.majorVersion.triageMajorVersionPercent(triageSummary.majorVersion,triageReportSummary)}}%</b>
+                                <small *ngIf="triageReportSummary.majorVersionRefreshtimes!=0" title="Triage Times / Total Update Times">
+                                    ({{triageSummary.majorVersion.triageTimes}} Times / {{triageReportSummary.majorVersionRefreshtimes}})
+                                </small>
+                                <small *ngIf="triageReportSummary.majorVersionRefreshtimes==0">{{triageSummary.majorVersion.triageTimes}} Times</small>
+                            </td>
+                            <td colspan="2">Uncommited : 
+                                <a [innerHtml]="triageSummary.majorVersion.uncommitedIds.length + ' Views'"
+                                    class="pointer"
+                                    (click)="getModalSupervisors(triageSummary.majorVersion.uncommitedIds)"
+                                    data-toggle="modal"
+                                    data-target="#ViewsDetailList">
+                                </a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Commited : 
+                                <a [innerHtml]="triageSummary.majorVersion.commitedIds.length + ' Views'"
+                                    class="pointer"
+                                    (click)="getModalSupervisors(triageSummary.majorVersion.commitedIds)"
+                                    data-toggle="modal"
+                                    data-target="#ViewsDetailList">
+                                </a>
+                            </td>
+                            <td>Average Commit Duration : {{triageSummary.majorVersion.aveLatency}}</td>
+                        </tr>
+                        <tr>
+                            <td rowspan="2">Manual</td>
+                            <td rowspan="2" width="25%" class="vertical-middle pd-8">
+                                <b>{{triageSummary.manual.triageViewsPercent}}%</b>
+                                <small title="Triage Views / Total Views">
+                                    (<a [innerHtml]="triageSummary.manual.allViewIds.length + ' Views'"
+                                    class="pointer"
+                                    (click)="getModalSupervisors(triageSummary.manual.allViewIds)"
+                                    data-toggle="modal"
+                                    data-target="#ViewsDetailList">
+                                    </a> / {{triageSummary.manual.stateCount}})
+                                </small>
+                                &emsp;&emsp;|&emsp;&emsp;
+                                <b *ngIf="triageReportSummary.manualRefreshtimes!=0">{{triageSummary.manual.triageManualPercent(triageSummary.manual,triageReportSummary)}}%</b>
+                                <small *ngIf="triageReportSummary.manualRefreshtimes!=0" title="Triage Times / Total Update Times">
+                                    ({{triageSummary.manual.triageTimes}} Times / {{triageReportSummary.manualRefreshtimes}})
+                                </small>
+                                <small *ngIf="triageReportSummary.manualRefreshtimes==0">{{triageSummary.manual.triageTimes}} Times</small>
+                            </td>
+                            <td colspan="2">Uncommited : 
+                                <a [innerHtml]="triageSummary.manual.uncommitedIds.length + ' Views'"
+                                    class="pointer"
+                                    (click)="getModalSupervisors(triageSummary.manual.uncommitedIds)"
+                                    data-toggle="modal"
+                                    data-target="#ViewsDetailList">
+                                </a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Commited : 
+                                <a [innerHtml]="triageSummary.manual.commitedIds.length + ' Views'"
+                                    class="pointer"
+                                    (click)="getModalSupervisors(triageSummary.manual.commitedIds)"
+                                    data-toggle="modal"
+                                    data-target="#ViewsDetailList">
+                                </a>
+                            </td>
+                            <td>Average Commit Duration : {{triageSummary.manual.aveLatency}}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <!--error table-->
+            <div id="Error" class="tab-pane fade bg-white pd-20">
+                <table class="table table-bordered ft-16 text-center">
+                    <thead>
+                        <tr class="bg-primary">
+                            <th>ViewState</th>
+                            <th>Number</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td style="width:30%;">EveryVersion</td>
+                            <td class="vertical-middle pd-8">
+                                <b>{{errorSummary.everyVersion.errorViewsPercent}}%</b>
+                                <small title="Error Views / Total Views">
+                                    (<a [innerHtml]="errorSummary.everyVersion.erroredIds.length + ' Views'"
+                                    class="pointer"
+                                    (click)="getModalSupervisors(errorSummary.everyVersion.erroredIds)"
+                                    data-toggle="modal"
+                                    data-target="#ViewsDetailList">
+                                    </a> / {{errorSummary.everyVersion.stateCount}})
+                                </small>
+                                &emsp;&emsp;|&emsp;&emsp; 
+                                <b *ngIf="triageReportSummary.everyVersionRefreshtimes!=0">{{errorSummary.everyVersion.errorEveryVersionPercent(errorSummary.everyVersion,triageReportSummary)}}%</b>
+                                <small *ngIf="triageReportSummary.everyVersionRefreshtimes!=0" title="Error Times / Total Update Times">
+                                    ({{errorSummary.everyVersion.errorTimes}} Times / {{triageReportSummary.everyVersionRefreshtimes}})
+                                </small>
+                                <small *ngIf="triageReportSummary.everyVersionRefreshtimes==0">{{errorSummary.everyVersion.errorTimes}} Times</small>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>MajorVersion</td>
+                            <td class="vertical-middle pd-8">
+                                <b>{{errorSummary.majorVersion.errorViewsPercent}}%</b>
+                                <small title="Error Views / Total Views">
+                                    (<a [innerHtml]="errorSummary.majorVersion.erroredIds.length + ' Views'"
+                                    class="pointer"
+                                    (click)="getModalSupervisors(errorSummary.majorVersion.erroredIds)"
+                                    data-toggle="modal"
+                                    data-target="#ViewsDetailList">
+                                    </a> / {{errorSummary.majorVersion.stateCount}})
+                                </small>
+                                &emsp;&emsp;|&emsp;&emsp;
+                                <b *ngIf="triageReportSummary.majorVersionRefreshtimes!=0">{{errorSummary.majorVersion.errorMajorVersionPercent(errorSummary.majorVersion,triageReportSummary)}}%</b>
+                                <small *ngIf="triageReportSummary.majorVersionRefreshtimes!=0" title="Error Times / Total Update Times">
+                                    ({{errorSummary.majorVersion.errorTimes}} Times / {{triageReportSummary.majorVersionRefreshtimes}})
+                                </small>
+                                <small *ngIf="triageReportSummary.majorVersionRefreshtimes==0">{{errorSummary.majorVersion.errorTimes}} Times</small>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Manual</td>
+                            <td class="vertical-middle pd-8">
+                                <b>{{errorSummary.manual.errorViewsPercent}}%</b>
+                                <small title="Error Views / Total Views">
+                                    (<a [innerHtml]="errorSummary.manual.erroredIds.length + ' Views'"
+                                    class="pointer"
+                                    (click)="getModalSupervisors(errorSummary.manual.erroredIds)"
+                                    data-toggle="modal"
+                                    data-target="#ViewsDetailList">
+                                    </a> / {{errorSummary.manual.stateCount}})
+                                </small>
+                                &emsp;&emsp;|&emsp;&emsp;
+                                <b *ngIf="triageReportSummary.manualRefreshtimes!=0">{{errorSummary.manual.errorManualPercent(errorSummary.manual,triageReportSummary)}}%</b>
+                                <small *ngIf="triageReportSummary.manualRefreshtimes!=0" title="Error Times / Total Update Times">
+                                    ({{errorSummary.manual.errorTimes}} Times / {{triageReportSummary.manualRefreshtimes}})
+                                </small>
+                                <small *ngIf="triageReportSummary.manualRefreshtimes==0">{{errorSummary.manual.errorTimes}} Times</small>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <!-- later -->
+            <div id="LongToGraph" class="tab-pane fade bg-white pd-20">
+                <table class="table table-bordered ft-16 text-center">
+                    <thead>
+                        <tr class="bg-primary">
+                            <th>ViewState</th>
+                            <th>Number</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td style="width:30%;">EveryVersion</td>
+                            <td class="vertical-middle pd-8">
+                                <b>{{longLatencySummary.longLatencyEveryVersionPercent(missSlaSummary.everyVersion)}}%</b>
+                                <small title="LongToGraph Views / Total Views">
+                                    (<a [innerHtml]="longLatencySummary.everyVersion.length + ' Views'"
+                                    class="pointer"
+                                    (click)="getModalSupervisors(longLatencySummary.everyVersion)"
+                                    data-toggle="modal"
+                                    data-target="#ViewsDetailList">
+                                    </a> / {{missSlaSummary.everyVersion.stateCount}})
+                                </small>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>MajorVersion</td>
+                            <td class="vertical-middle pd-8">
+                                <b>{{longLatencySummary.longLatencyMajorVersionPercent(missSlaSummary.majorVersion)}}%</b>
+                                <small title="LongToGraph Views / Total Views">
+                                    (<a [innerHtml]="longLatencySummary.majorVersion.length + ' Views'"
+                                    class="pointer"
+                                    (click)="getModalSupervisors(longLatencySummary.majorVersion)"
+                                    data-toggle="modal"
+                                    data-target="#ViewsDetailList">
+                                    </a> / {{missSlaSummary.majorVersion.stateCount}})
+                                </small>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Manual</td>
+                            <td class="vertical-middle pd-8">
+                                <b>{{longLatencySummary.longLatencyManualPercent(missSlaSummary.manual)}}%</b>
+                                <small title="LongToGraph Views / Total Views">
+                                    (<a [innerHtml]="longLatencySummary.manual.length + ' Views'"
+                                    class="pointer"
+                                    (click)="getModalSupervisors(longLatencySummary.manual)"
+                                    data-toggle="modal"
+                                    data-target="#ViewsDetailList">
+                                    </a> / {{missSlaSummary.manual.stateCount}})
+                                </small>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <!--rank table-->
+            <div id="Rank" class="tab-pane fade bg-white pd-20">
+                <div class="container-fluid" style="padding:0">
+                    <ul class="nav nav-pills nav-stacked col-md-2 ft-16">
+                        <li class="active"><a href="#VersionLatency" data-toggle="pill">By Version Latency</a></li>
+                        <li><a href="#RankBySegment" data-toggle="pill">By Segment</a></li>
+                        <li><a href="#RankByOwner" data-toggle="pill">By Owner</a></li>
+                        <li><a href="#RankByViewName" data-toggle="pill">By View</a></li>
+                    </ul>
+                    <div class="tab-content col-md-10">
+                        <div class="tab-pane active" id="VersionLatency">
+                            <table class="table table-bordered ft-16 text-center">
+                                <thead>
+                                    <tr class="bg-primary">
+                                        <th>Version Latency</th>
+                                        <th>Number of Views</th>
+                                        <th>Min Latency</th>
+                                        <th>Max Latency</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!--0 ~ 50%-->
+                                    <tr>
+                                        <td>
+                                            0 ~ 50%<br>
+                                            ({{versionLatencyRank.zeroToFifty.aveLatencyRank}} hrs)
+                                        </td>
+                                        <td>
+                                            <a [innerHtml]="versionLatencyRank.zeroToFifty.ids.length"
+                                                class="pointer"
+                                                (click)="getModalSupervisors(versionLatencyRank.zeroToFifty.ids)"
+                                                data-toggle="modal"
+                                                data-target="#ViewsDetailList">
+                                            </a>
+                                        </td>
+                                        <td [innerHtml]="versionLatencyRank.zeroToFifty.minLatency"></td>
+                                        <td [innerHtml]="versionLatencyRank.zeroToFifty.maxLatency"></td>
+                                    </tr>
+                                    <!--50 ~ 90%-->
+                                    <tr>
+                                        <td>
+                                            50 ~ 90%<br>
+                                            ({{versionLatencyRank.fiftyToNinety.aveLatencyRank}} hrs)
+                                        </td>
+                                        <td>
+                                            <a [innerHtml]="versionLatencyRank.fiftyToNinety.ids.length"
+                                                class="pointer"
+                                                (click)="getModalSupervisors(versionLatencyRank.fiftyToNinety.ids)"
+                                                data-toggle="modal"
+                                                data-target="#ViewsDetailList">
+                                            </a>
+                                        </td>
+                                        <td [innerHtml]="versionLatencyRank.fiftyToNinety.minLatency"></td>
+                                        <td [innerHtml]="versionLatencyRank.fiftyToNinety.maxLatency"></td>
+                                    </tr>
+                                    <!--90 ~ 100%-->
+                                    <tr>
+                                        <td>
+                                            90 ~ 100%<br>
+                                            ({{versionLatencyRank.ninetyToHundred.aveLatencyRank}} hrs)
+                                        </td>
+                                        <td>
+                                            <a [innerHtml]="versionLatencyRank.ninetyToHundred.ids.length"
+                                                class="pointer"
+                                                (click)="getModalSupervisors(versionLatencyRank.ninetyToHundred.ids)"
+                                                data-toggle="modal"
+                                                data-target="#ViewsDetailList">
+                                            </a>
+                                        </td>
+                                        <td [innerHtml]="versionLatencyRank.ninetyToHundred.minLatency"></td>
+                                        <td [innerHtml]="versionLatencyRank.ninetyToHundred.maxLatency"></td>
+                                    </tr>
+                            </table>
+                        </div>
+                        <div class="tab-pane" id="RankBySegment">
+                            <table class="table table-bordered ft-16 text-center">
+                                <thead>
+                                    <tr class="bg-primary">
+                                        <th class="pointer" (click)="sortSegmentRanks('Segment')">
+                                            Segment 
+                                            <i class="text-white fa" [ngClass]="segmentRankNameDesc? 'fa-caret-down' : 'fa-caret-up'"></i>
+                                        </th>
+                                        <th class="pointer" (click)="sortSegmentRanks('MissSla')">
+                                            Miss SLA <small>(Views)</small>
+                                            <i class="text-white fa" [ngClass]="segmentRankMissSlaDesc? 'fa-caret-down' : 'fa-caret-up'"></i>
+                                        </th>
+                                        <th class="pointer" (click)="sortSegmentRanks('Triage')">
+                                            Triage <small>(Views)</small>
+                                            <i class="text-white fa" [ngClass]="segmentRankTriageDesc? 'fa-caret-down' : 'fa-caret-up'"></i>
+                                        </th>
+                                        <th class="pointer" (click)="sortSegmentRanks('Error')">
+                                            Error <small>(Views)</small>
+                                            <i class="text-white fa" [ngClass]="segmentRankErrorDesc? 'fa-caret-down' : 'fa-caret-up'"></i>
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody *ngFor="let segmentRank of segmentRanks">
+                                    <tr>
+                                        <td width="270"><div [title]="segmentRank.attribute" class="ellipsis" [innerHtml]="segmentRank.attribute"></div></td>
+                                        <td>
+                                            <a class="pointer"
+                                                [innerHtml]="segmentRank.missSlaViewsIds.length"
+                                                (click)="getModalSupervisors(segmentRank.missSlaViewsIds)"
+                                                data-toggle="modal"
+                                                data-target="#ViewsDetailList">
+                                            </a>
+                                        </td>
+                                        <td>
+                                            <a class="pointer"
+                                                [innerHtml]="segmentRank.triagedViewsIds.length"
+                                                (click)="getModalSupervisors(segmentRank.triagedViewsIds)"
+                                                data-toggle="modal"
+                                                data-target="#ViewsDetailList">
+                                            </a>
+                                        </td>
+                                        <td>
+                                            <a class="pointer"
+                                                [innerHtml]="segmentRank.erroredViewsIds.length"
+                                                (click)="getModalSupervisors(segmentRank.erroredViewsIds)"
+                                                data-toggle="modal"
+                                                data-target="#ViewsDetailList">
+                                            </a>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="tab-pane" id="RankByOwner">
+                            <table class="table table-bordered ft-16 text-center">
+                                <thead>
+                                    <tr class="bg-primary">
+                                        <th class="pointer" (click)="sortOwnerRanks('Owner')">
+                                            Owner 
+                                            <i class="text-white fa" [ngClass]="ownerRankNameDesc? 'fa-caret-down' : 'fa-caret-up'"></i>
+                                        </th>
+                                        <th class="pointer" (click)="sortOwnerRanks('MissSla')">
+                                            Miss SLA <small>(Views)</small>
+                                            <i class="text-white fa" [ngClass]="ownerRankMissSlaDesc? 'fa-caret-down' : 'fa-caret-up'"></i>
+                                        </th>
+                                        <th class="pointer" (click)="sortOwnerRanks('Triage')">
+                                            Triage <small>(Views)</small>
+                                            <i class="text-white fa" [ngClass]="ownerRankTriageDesc? 'fa-caret-down' : 'fa-caret-up'"></i>
+                                        </th>
+                                        <th class="pointer" (click)="sortOwnerRanks('Error')">
+                                            Error <small>(Views)</small>
+                                            <i class="text-white fa" [ngClass]="ownerRankErrorDesc? 'fa-caret-down' : 'fa-caret-up'"></i>
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody *ngFor="let ownerRank of ownerRanks">
+                                    <tr>
+                                        <td [innerHtml]="ownerRank.attribute"></td>
+                                        <td>
+                                            <a class="pointer"
+                                                [innerHtml]="ownerRank.missSlaViewsIds.length"
+                                                (click)="getModalSupervisors(ownerRank.missSlaViewsIds)"
+                                                data-toggle="modal"
+                                                data-target="#ViewsDetailList">
+                                            </a>
+                                        </td>
+                                        <td>
+                                            <a class="pointer"
+                                                [innerHtml]="ownerRank.triagedViewsIds.length"
+                                                (click)="getModalSupervisors(ownerRank.triagedViewsIds)"
+                                                data-toggle="modal"
+                                                data-target="#ViewsDetailList">
+                                            </a>
+                                        </td>
+                                        <td>
+                                            <a class="pointer"
+                                                [innerHtml]="ownerRank.erroredViewsIds.length"
+                                                (click)="getModalSupervisors(ownerRank.erroredViewsIds)"
+                                                data-toggle="modal"
+                                                data-target="#ViewsDetailList">
+                                            </a>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="tab-pane" id="RankByViewName">
+                            <table class="table table-bordered ft-16 text-center">
+                                <thead>
+                                    <tr class="bg-primary">
+                                        <th class="pointer" (click)="sortViewNameRanks('ViewName')">
+                                            View Name 
+                                            <i class="text-white fa" [ngClass]="viewNameRankNameDesc? 'fa-caret-down' : 'fa-caret-up'"></i>
+                                        </th>
+                                        <th class="pointer" (click)="sortViewNameRanks('MissSla')">
+                                            Miss SLA <small>(Times)</small>
+                                            <i class="text-white fa" [ngClass]="viewNameRankMissSlaDesc? 'fa-caret-down' : 'fa-caret-up'"></i>
+                                        </th>
+                                        <th class="pointer" (click)="sortViewNameRanks('Triage')">
+                                            Triage <small>(Times)</small>
+                                            <i class="text-white fa" [ngClass]="viewNameRankTriageDesc? 'fa-caret-down' : 'fa-caret-up'"></i>
+                                        </th>
+                                        <th class="pointer" (click)="sortViewNameRanks('Error')">
+                                            Error <small>(Times)</small>
+                                            <i class="text-white fa" [ngClass]="viewNameRankErrorDesc? 'fa-caret-down' : 'fa-caret-up'"></i>
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody *ngFor="let viewNameRank of viewNameRanks">
+                                    <tr>
+                                        <td>
+                                            <a class="pointer"
+                                                [innerHtml]="viewNameRank.viewName"
+                                                (click)="getModalSupervisors([viewNameRank.id])"
+                                                data-toggle="modal"
+                                                data-target="#ViewsDetailList">
+                                            </a>
+                                        </td>
+                                        <td [innerHtml]="viewNameRank.missSlaTimes"></td>
+                                        <td [innerHtml]="viewNameRank.triagedTimes"></td>
+                                        <td [innerHtml]="viewNameRank.erroredTimes"></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade"
+        tabindex="-1"
+        role="dialog"
+        id="ViewsDetailList">
+    <div class="modal-dialog modal-lg"
+            style="width:100%;"
+            role="document">
+        <div class="modal-content">
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col-sm-12 pd-15 pt-10">
+                        <button type="button" class="close pb-10" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        <div>
+                            <report-detail-modal
+                                [triageViewSupervisors]="modalTriageViewSupervisors"
+                                [triageReport]="currentReport"
+                                [startDate]="currentStartDate"
+                                [endDate]="currentEndDate">
+                            </report-detail-modal>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,137 @@
+
+<ui-switch switchColor="#fcfcfc" [(ngModel)]="isDebugInfoPane" (change)="switchResultPane($event)"></ui-switch>
+<!-- triage view debug info table -->
+<div *ngIf="isDebugInfoPane">
+    <!-- three cols table  -->
+    <div *ngIf="debugInfo.triageDebugInfoThreeColTables.length != 0">
+        <table class="table table-condensed table-responsive table-hover" *ngFor="let triageDebugInfoThreeColTable of debugInfo.triageDebugInfoThreeColTables; trackBy: index">
+            <caption>
+                <b class="text-danger" [innerHTML]="triageDebugInfoThreeColTable.title"></b>
+                <span *ngIf="triageDebugInfoThreeColTable.url != ''">:
+                    <a target="_blank" [href]="triageDebugInfoThreeColTable.url">Debug Stream</a>
+                </span>
+            </caption>
+            <thead>
+                <tr>
+                    <th *ngFor="let thead of triageDebugInfoThreeColTable.theads; trackBy: index" [innerHTML]="thead"></th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let debugInfoThreeCol of triageDebugInfoThreeColTable.debugInfoThreeCols; trackBy: index">
+                    <td [innerHTML]="debugInfoThreeCol.validatorName"></td>
+                    <td [innerHTML]="debugInfoThreeCol.passPercentage"></td>
+                    <td [innerHTML]="debugInfoThreeCol.minPercentage"></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- five cols table -->
+    <div *ngIf="debugInfo.triageDebugInfoFiveColTables.length != 0">
+        <table class="table table-condensed table-responsive table-hover" *ngFor="let triageDebugInfoFiveColTable of debugInfo.triageDebugInfoFiveColTables; trackBy: index">
+            <caption>
+                <b class="text-danger" [innerHTML]="triageDebugInfoFiveColTable.title"></b>
+                <span *ngIf="triageDebugInfoFiveColTable.url != ''">:
+                    <a target="_blank" [href]="triageDebugInfoFiveColTable.url">Debug Stream</a>
+                </span>
+            </caption>
+            <thead>
+                <tr>
+                    <th></th>
+                    <th *ngFor="let thead of triageDebugInfoFiveColTable.theads; trackBy: index" [innerHTML]="thead"></th>
+                </tr>
+            </thead>
+            <tbody *ngFor="let debugInfoFiveCol of triageDebugInfoFiveColTable.debugInfoFiveCols; trackBy: index">
+                <tr>
+                    <th class="text-primary pointer" (click)="getTriageAnalysisResultByProperty(debugInfoFiveCol, triageDebugInfoFiveColTable.url)"><i [ngClass]="debugInfoFiveCol.expandDetail ? 'fa fa-chevron-up': 'fa fa-chevron-down'"></i></th>                                                        
+                    <td class="pointer" [innerHTML]="debugInfoFiveCol.predicate" (click)="getTriageAnalysisResultByProperty(debugInfoFiveCol, triageDebugInfoFiveColTable.url)"></td>
+                    <td [innerHTML]="debugInfoFiveCol.previousValues"></td>
+                    <td [innerHTML]="debugInfoFiveCol.currentValues"></td>
+                    <td [innerHTML]="debugInfoFiveCol.change"></td>
+                    <td [innerHTML]="debugInfoFiveCol.threshold"></td>
+                </tr>
+                <tr *ngIf="debugInfoFiveCol.expandDetail">
+                    <td colspan="6">
+                        <triage-analysis-result [churnCount]="debugInfoFiveCol.churnCount" [triageChurn]="debugInfoFiveCol.triageChurn" [currentSide1]="currentSide1"
+                            [currentSide2]="currentSide2" [property]="debugInfoFiveCol.predicate"></triage-analysis-result>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- six cols table -->
+    <div *ngIf="debugInfo.triageDebugInfoSixColTables.length != 0">
+        <table class="table table-condensed table-responsive table-hover" *ngFor="let triageDebugInfoSixColTable of debugInfo.triageDebugInfoSixColTables; trackBy: index">
+            <caption>
+                <b class="text-danger" [innerHTML]="triageDebugInfoSixColTable.title"></b>
+                <span *ngIf="triageDebugInfoSixColTable.url != ''">:
+                    <a target="_blank" [href]="triageDebugInfoSixColTable.url">Debug Stream</a>
+                </span>
+            </caption>
+            <thead>
+                <tr>
+                    <th></th>
+                    <th *ngFor="let thead of triageDebugInfoSixColTable.theads; trackBy: index" [innerHTML]="thead"></th>
+                </tr>
+            </thead>
+            <tbody *ngFor="let debugInfoSixCol of triageDebugInfoSixColTable.debugInfoSixCols; trackBy: index">
+                <tr>
+                    <th class="text-primary pointer" (click)="getTriageAnalysisResultByProperty(debugInfoSixCol, triageDebugInfoSixColTable.url)"><i [ngClass]="debugInfoSixCol.expandDetail ? 'fa fa-chevron-up': 'fa fa-chevron-down'"></i></th>                            
+                    <td class="pointer" [innerHTML]="debugInfoSixCol.predicate" (click)="getTriageAnalysisResultByProperty(debugInfoSixCol, triageDebugInfoSixColTable.url)"></td>
+                    <td [innerHTML]="debugInfoSixCol.previousValues"></td>
+                    <td [innerHTML]="debugInfoSixCol.churn"></td>
+                    <td [innerHTML]="debugInfoSixCol.change"></td>
+                    <td [innerHTML]="debugInfoSixCol.minThreshold"></td>
+                    <td [innerHTML]="debugInfoSixCol.maxThreshold"></td>
+                </tr>
+                <tr *ngIf="debugInfoSixCol.expandDetail">
+                    <td colspan="7">
+                        <triage-analysis-result [churnCount]="debugInfoSixCol.churnCount" [triageChurn]="debugInfoSixCol.triageChurn" [currentSide1]="currentSide1"
+                            [currentSide2]="currentSide2" [property]="debugInfoSixCol.predicate"></triage-analysis-result>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div *ngIf="!isDebugInfoPane">
+    <div style="text-align:center" *ngIf="isFetchingAnalysisResult">
+        <br/>
+        <i class="fa fa-spinner fa-pulse fa-fw fa-3x"></i>
+    </div>
+    <div *ngIf="!isFetchingAnalysisResult">
+        <div *ngIf="triageAnalysisResultCount.debugStreamExistense">
+            <label class="radio-inline" *ngIf="triageAnalysisResultCount.debugStreamExistense.valueChurnCounter">
+                <input type="radio" name="triageDebugStream" (change)="switchChurn()" [(ngModel)]="triageDebugStream" value="ValueChurnCounter">
+                <b>ValueChurnCounter</b>
+            </label>
+            <label class="radio-inline" *ngIf="triageAnalysisResultCount.debugStreamExistense.pipelineTopEntitiesChurnCounter">
+                <input type="radio" name="triageDebugStream" (change)="switchChurn()" [(ngModel)]="triageDebugStream" value="PipelineTopEntitiesChurnCounter">
+                <b>PipelineTopEntitiesChurnCounter</b>
+            </label>
+            <label class="radio-inline" *ngIf="triageAnalysisResultCount.debugStreamExistense.pipelineTypeChurnCounter">
+                <input type="radio" name="triageDebugStream" (change)="switchChurn()" [(ngModel)]="triageDebugStream" value="PipelineTypeChurnCounter">
+                <b>PipelineTypeChurnCounter</b>
+            </label>
+            <label class="radio-inline" *ngIf="triageAnalysisResultCount.debugStreamExistense.pipelineChurnCounter">
+                <input type="radio" name="triageDebugStream" (change)="switchChurn()" [(ngModel)]="triageDebugStream" value="PipelineChurnCounter">
+                <b>PipelineChurnCounter</b>
+            </label>
+            <label class="radio-inline" *ngIf="triageAnalysisResultCount.debugStreamExistense.pipelineUpdatedEntitiesChurnCounter">
+                <input type="radio" name="triageDebugStream" (change)="switchChurn()" [(ngModel)]="triageDebugStream" value="PipelineUpdatedEntitiesChurnCounter">
+                <b>PipelineUpdatedEntitiesChurnCounter</b>
+            </label>
+            <label class="radio-inline" *ngIf="triageAnalysisResultCount.debugStreamExistense.updatedEntitiesChurnCounter">
+                <input type="radio" name="triageDebugStream" (change)="switchChurn()" [(ngModel)]="triageDebugStream" value="UpdatedEntitiesChurnCounter">
+                <b>UpdatedEntitiesChurnCounter</b>
+            </label>
+        </div>
+        <br/>
+        <div>
+            <triage-analysis-result [churnCount]="currentTriageResultCount" [triageChurn]="currentChurn" [currentSide1]="currentSide1"
+                            [currentSide2]="currentSide2"></triage-analysis-result>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,48 @@
+<div class="section">
+    <form class="form-inline" (ngSubmit)="getViewerDiffProperties()" #triageInputForm="ngForm">
+        <div class="pd15">
+            <label class="radio-inline">
+                <input type="radio" name="viewerType" [value]="ViewerType.Viewer" [(ngModel)]="viewerType"><b>Viewer</b>
+            </label>
+            <label class="radio-inline">
+                <input type="radio" name="viewerType" [value]="ViewerType.ViewerDiff" [(ngModel)]="viewerType"><b>ViewerDiffOfSingleSubjectKey</b>
+            </label>
+            <label class="radio-inline">
+                <input type="radio" name="viewerType" [value]="ViewerType.ViewerDiffOfTwo" [(ngModel)]="viewerType"><b>ViewerDiffOfTwoSubjectKey</b>
+            </label>
+        </div>
+        <div class="flex">
+            <div class="form-group pr10" [ngClass]="viewerType == ViewerType.Viewer? 'whole-width': 'half-width'">
+                <label for="name">Standard Structure Stream:</label>
+                <input type="text" name="standardStream" class="form-control whole-width" required [(ngModel)]="standardStream">
+            </div>
+            <div *ngIf="viewerType != ViewerType.Viewer" class="form-group half-width">
+                <label for="name">Triaged Structure Stream:</label>
+                <input type="text" name="triagedStream" class="form-control whole-width"required [(ngModel)]="triagedStream">
+            </div>
+        </div>
+        <div class="flex">
+            <div class="form-group pr10" [ngClass]="viewerType == ViewerType.ViewerDiffOfTwo? 'half-width': 'whole-width'">
+                <label for="name">Subject Key:</label>
+                <input type="text" name="subjectKey1" class="form-control whole-width" required [(ngModel)]="subjectKey1">
+            </div>
+            <div *ngIf="viewerType == ViewerType.ViewerDiffOfTwo" class="form-group half-width">
+                <label for="name">Subject Key:</label>
+                <input type="text" name="subjectKey2" class="form-control whole-width" required [(ngModel)]="subjectKey2">
+            </div>
+        </div>
+        <br/>
+        <div style="text-align:center;">
+            <button type="submit" class="btn btn-primary" [disabled]="!triageInputForm.form.valid">
+                <i class="fa fa-spinner fa-pulse fa-fw" *ngIf="isFetchingEntityDiffViewer"></i>
+                Query
+            </button>
+        </div>
+    </form>
+</div>
+<div>
+    <diff-viewer-table
+        [displayType]="viewerType"
+        [(isFetchingEntityDiffViewer)]="isFetchingEntityDiffViewer">
+    </diff-viewer-table>
+</div>

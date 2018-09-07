@@ -1,0 +1,578 @@
+<div class="container-fluid">
+    <!-- submit form -->
+    <div class="section">
+        <form class="form-inline" style="display: flex; justify-content: space-around" (ngSubmit)="loadTriageAnalysis()" #triageInputForm="ngForm">
+            <!-- <div class="form-group">
+                    <label for="Customer Environment">Customer Environment</label>
+                    <input type="text" class="form-control" id="customerEnvironment" required [(ngModel)]="customerEnvironment" name="customerEnvironment" #spy>
+                </div>
+                <br>TODO: remove this: {{spy.className}} 
+            -->
+            <h3 style="margin:0">
+                <a target="_blank" [href]="entityView.entityViewUrl" [innerHTML]="entityView.entitySpaceViewName">
+                </a>
+            </h3>
+
+            <div style="padding-top: 5px;">
+                <label class="radio-inline">
+                    <input type="radio" name="optradio" [(ngModel)]="side2Type" value="Triage" (ngModelChange)="initSide2Version($event)">
+                    <b>Triage</b>
+                </label>
+                <label class="radio-inline" style="margin-left: 30px;">
+                    <input type="radio" name="optradio" [(ngModel)]="side2Type" value="Standard" (ngModelChange)="initSide2Version($event)">
+                    <b>Standard</b>
+                </label>
+            </div>
+
+            <div>
+                <div class="form-group">
+                    <label for="Customer Environment">Customer Environment:</label>
+                    <input type="text" class="form-control" id="customerEnvironment" required [(ngModel)]="customerIdEnvironment" name="customerEnvironment">
+                </div>
+
+                <div class="form-group" style="margin-left: 15px;">
+                    <label for="Entityspace View">Entityspace View:</label>
+                    <input type="text" class="form-control" id="entitySpaceView" required [(ngModel)]="entityViewKey" name="entitySpaceView">
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="margin-left: 15px;" [disabled]="!triageInputForm.form.valid || isFetchingEntityView">
+                    <i class="fa fa-spinner fa-pulse fa-fw" *ngIf="isFetchingEntityView"></i>
+                    <span class="sr-only">Loading...</span>
+                    Load
+                </button>
+            </div>
+        </form>
+
+        <hr/>
+
+        <!-- meta data of standard and triage view -->
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-sm-6" style="padding:0;">
+                    <div class="panel panel-success">
+                        <div class="panel-heading" style="padding:0;">
+                            <nav class="navbar navbar-light navbar-default" style="margin-bottom:0;">
+                                <div class="container-fluid">
+                                    <div class="navbar-header">
+                                        <a class="navbar-brand" href="#">Standard</a>
+                                    </div>
+                                    <ul class="nav navbar-nav">
+                                        <li [class.active]="currentSide1.version == side1VersionNum" (click)="setSide1ViewVersionNum(side1VersionNum)" *ngFor="let side1VersionNum of side1VersionNums; trackBy: index">
+                                            <a class="pointer" [innerHTML]="side1VersionNum"></a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </nav>
+                        </div>
+                        <div class="panel-body">
+                            <!-- statistic of triage info -->
+                            <div>
+                                <table class="table table-condensed table-responsive table-hover" style="margin-bottom:0; word-break:break-all">
+                                    <tbody>
+                                        <tr>
+                                            <td>
+                                                <b>State</b>
+                                            </td>
+                                            <td [innerHTML]="currentSide1.state"></td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <b>StreamPath</b>
+                                            </td>
+                                            <td>
+                                                <a target="_blank" href="{{currentSide1.viewStreamPath}}?property=info" [innerHTML]="currentSide1.viewStreamPath"></a>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <b>DebugFolder</b>
+                                            </td>
+                                            <td>
+                                                <a target="_blank" href="{{currentSide1.fullDebugStreamFolder}}" [innerHTML]="currentSide1.fullDebugStreamFolder"></a>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <b>VC</b>
+                                            </td>
+                                            <td [innerHTML]="currentSide1.virtualCluster"></td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <b>UpdatedTime</b>
+                                            </td>
+                                            <td [innerHTML]="currentSide1.lastUpdatedTime">VC</td>
+                                        </tr>
+                                        <tr>
+                                            <!-- <td>
+                                                <b>MappingFile</b>
+                                            </td> -->
+                                            <td colspan="2">
+                                            <table class="table table-condensed table-responsive table-hover" style="margin-bottom:0; word-break:break-all">
+                                                    <thead>
+                                                        <th class="text-center">Mapping File</th>
+                                                        <th class="text-center" *ngIf="customerId === 'WrapStar'">WrapStar Model</th>
+                                                    </thead>
+                                                    <tbody>
+                                                        <tr *ngFor="let mappingFile of currentSide1.mappingSetting.mappingFiles; trackBy: index">
+                                                            <td [colSpan]="customerId === 'WrapStar'? 1 : 2">
+                                                                <li class="list-group-item">
+                                                                    <span [innerHTML]="mappingFile.name + '@' + mappingFile.version"></span>
+                                                                    <span class="badge pointer" style="background-color: skyblue;" (click)="downloadMappingFile(currentSide1.version, mappingFile)">
+                                                                        <i class="fa fa-cloud-download" *ngIf="!mappingFile.isDownloading"></i>
+                                                                        <i class="fa fa-spinner fa-pulse fa-fw" *ngIf="mappingFile.isDownloading"></i>
+                                                                    </span>
+                                                                </li>
+                                                            </td>
+                                                            <td align="center" *ngIf="customerId === 'WrapStar'">
+                                                                <ul class="list-group" style="margin-bottom: 0;" *ngIf="mappingFile.modelRevisions">
+                                                                    <li class="list-group-item" *ngFor="let model of mappingFile.modelRevisions; trackBy: index">
+                                                                        <span class="text-left"><a target="_blank" [href]="model.modelUrl" [innerHTML]="model.version"></a></span>
+                                                                        <span class="badge pointer" style="background-color: skyblue;" (click)="downloadWrapstarModel(model)">
+                                                                            <i class="fa fa-cloud-download" *ngIf="!model.isDownloading"></i>
+                                                                            <i class="fa fa-spinner fa-pulse fa-fw" *ngIf="model.isDownloading"></i>
+                                                                        </span>
+                                                                    </li>
+                                                                </ul>
+                                                                <span class="text-center" *ngIf="!mappingFile.modelRevisions || mappingFile.modelRevisions.length == 0">
+                                                                    <i class="fa fa-spinner fa-pulse fa-fw"></i>
+                                                                    <span class="sr-only">Loading...</span>
+                                                                </span>
+                                                            </td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <b>Functoid</b>
+                                            </td>
+                                            <td>
+                                                <ul class="list-group" style="margin-bottom: 0;">
+                                                    <li class="list-group-item" *ngFor="let functoid of currentSide1.mappingSetting.functoids; trackBy: index">
+                                                        {{functoid.name}}
+                                                        <span class="badge pointer" style="background-color: skyblue;" (click)="downloadFunctoid(currentSide1.version, functoid)">
+                                                            <i class="fa fa-cloud-download" *ngIf="!functoid.isDownloading"></i>
+                                                            <i class="fa fa-spinner fa-pulse fa-fw" *ngIf="functoid.isDownloading"></i>
+                                                        </span>
+                                                    </li>
+                                                </ul>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- triage view side -->
+                <div class="col-sm-6" style="padding:0;" 
+                    *ngIf="(side2Type == 'Standard') || (side2Type == 'Triage' && entityView && entityView.triagedVersions.length != 0)">
+                    <div class="panel" [ngClass]="(side2Type == 'Standard') ? 'panel-success' : 'panel-danger'">
+                        <div class="panel-heading" style="padding:0;">
+                            <nav class="navbar navbar-light navbar-default" style="margin-bottom:0;">
+                                <div class="container-fluid">
+                                    <div class="navbar-header">
+                                        <a class="navbar-brand" href="#" [innerHTML]="side2Type"></a>
+                                    </div>
+                                    <ul class="nav navbar-nav">
+                                        <li [class.active]="currentSide2.version == side2VersionNum" (click)="setSide2ViewVersionNum(side2VersionNum)" *ngFor="let side2VersionNum of side2VersionNums; trackBy: index">
+                                            <a class="pointer" [innerHTML]="side2VersionNum"></a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </nav>
+                        </div>
+                        <div class="panel-body">
+                            <!-- statistic of triage info -->
+                            <div>
+                                <table class="table table-condensed table-responsive table-hover" style="margin-bottom:0; word-break:break-all">
+                                    <tbody>
+                                        <tr>
+                                            <td>
+                                                <b>State</b>
+                                            </td>
+                                            <td [innerHTML]="currentSide2.state"></td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <b>StreamPath</b>
+                                            </td>
+                                            <td>
+                                                <a target="_blank" href="{{currentSide2.viewStreamPath}}?property=info" [innerHTML]="currentSide2.viewStreamPath"></a>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <b>DebugFolder</b>
+                                            </td>
+                                            <td>
+                                                <a target="_blank" href="{{currentSide2.fullDebugStreamFolder}}" [innerHTML]="currentSide2.fullDebugStreamFolder"></a>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <b>VC</b>
+                                            </td>
+                                            <td [innerHTML]="currentSide2.virtualCluster"></td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <b>UpdatedTime</b>
+                                            </td>
+                                            <td [innerHTML]="currentSide2.lastUpdatedTime">VC</td>
+                                        </tr>
+                                        <tr>
+                                            <td colspan="2">
+                                                <table class="table table-condensed table-responsive table-hover" style="margin-bottom:0; word-break:break-all">
+                                                    <thead>
+                                                        <th class="text-center">Mapping File</th>
+                                                        <th class="text-center" *ngIf="customerId === 'WrapStar'">WrapStar Model</th>
+                                                    </thead>
+                                                    <tbody>
+                                                        <tr *ngFor="let mappingFile of currentSide2.mappingSetting.mappingFiles; trackBy: index">
+                                                            <td [colSpan]="customerId === 'WrapStar'? 1 : 2">
+                                                                <li class="list-group-item">
+                                                                    <span [innerHTML]="mappingFile.name + '@' + mappingFile.version"></span>
+                                                                    <span class="badge pointer" style="background-color: skyblue;" (click)="downloadMappingFile(currentSide2.version, mappingFile)">
+                                                                        <i class="fa fa-cloud-download" *ngIf="!mappingFile.isDownloading"></i>
+                                                                        <i class="fa fa-spinner fa-pulse fa-fw" *ngIf="mappingFile.isDownloading"></i>
+                                                                    </span>
+                                                                </li>
+                                                            </td>
+                                                            <td align="center" *ngIf="customerId === 'WrapStar'">
+                                                                <ul class="list-group" style="margin-bottom: 0;" *ngIf="mappingFile.modelRevisions">
+                                                                    <li class="list-group-item" *ngFor="let model of mappingFile.modelRevisions; trackBy: index">
+                                                                        <span class="text-left"><a target="_blank" [href]="model.modelUrl" [innerHTML]="model.version"></a></span>
+                                                                        <span class="badge pointer" style="background-color: skyblue;" (click)="downloadWrapstarModel(model)">
+                                                                            <i class="fa fa-cloud-download" *ngIf="!model.isDownloading"></i>
+                                                                            <i class="fa fa-spinner fa-pulse fa-fw" *ngIf="model.isDownloading"></i>
+                                                                        </span>
+                                                                    </li>
+                                                                </ul>
+                                                                <span *ngIf="!mappingFile.modelRevisions || mappingFile.modelRevisions.length == 0">
+                                                                    <i class="fa fa-spinner fa-pulse fa-fw"></i>
+                                                                    <span class="sr-only">Loading...</span>
+                                                                </span>
+                                                            </td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                                <!-- <ul class="list-group" style="margin-bottom: 0;">
+                                                    <li class="list-group-item" *ngFor="let mappingFile of currentSide2.mappingSetting.mappingFiles">
+                                                        {{mappingFile.name}}@{{mappingFile.version}}
+                                                        <span class="badge pointer" style="background-color: skyblue;" (click)="downloadMappingFile(currentSide2.version, mappingFile)">
+                                                            <i class="fa fa-cloud-download" *ngIf="!mappingFile.isDownloading"></i>
+                                                            <i class="fa fa-spinner fa-pulse fa-fw" *ngIf="mappingFile.isDownloading"></i>
+                                                        </span>
+                                                    </li>
+                                                </ul> -->
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <b>Functoid</b>
+                                            </td>
+                                            <td>
+                                                <ul class="list-group" style="margin-bottom: 0;">
+                                                    <li class="list-group-item" *ngFor="let functoid of currentSide2.mappingSetting.functoids; trackBy: index">
+                                                        <span [innerHTML]="functoid.name"></span>
+                                                        <span class="badge pointer" style="background-color: skyblue;">
+                                                            <i class="fa fa-cloud-download" *ngIf="!functoid.isDownloading"></i>
+                                                            <i class="fa fa-spinner fa-pulse fa-fw" *ngIf="functoid.isDownloading"></i>
+                                                        </span>
+                                                    </li>
+                                                </ul>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <form *ngIf="side2Type == 'Triage' && entityView && entityView.triagedVersions.length != 0" (ngSubmit)="commitView()" #commitTriageViewForm="ngForm">
+                <div class="mt-10">
+                    <label class="radio-inline">
+                        <input type="radio" name="alert-radio" checked>
+                        <b>False Alert</b>
+                    </label>
+                    <label class="radio-inline">
+                        <input type="radio" name="alert-radio">
+                        <b>True Alert</b>
+                    </label>
+                </div>
+                <div class="btn-group mt-10" role="group">
+                    <button *ngFor="let commitTip of commitTips; trackBy: index" 
+                        class="btn btn-primary btn-sm unchecked"  type="button" 
+                        [innerHTML]="commitTip" (click)="selectCommitTip(commitTip, $event)"></button>
+                </div>
+                <div class="mt-10">
+                    <div class="form-group">
+                        <textarea id="commitComment" name="commitComment" class="form-control" required [(ngModel)]="commitComment"></textarea>
+                    </div>
+                </div>
+                <div class="text-center mt-10">
+                    <button type="submit" class="btn btn-primary" [disabled]="!commitTriageViewForm.form.valid || isCommitingTriagedView">
+                        <i class="fa fa-spinner fa-pulse fa-fw" *ngIf="isCommitingTriagedView"></i>
+                        <span class="sr-only">Loading...</span>
+                        Submit
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <br>
+
+    <div>
+        <job-panel [jobType]="JobType.Triage" [(job)]="triageAnalysisAetherJob" [(isForceSubmission)]="isForceSubmission" [jobPanelState]="jobPanelState"
+            [submitJob]="submitTriageJobFunc" [getJobState]="getTriageJobFunc" [cancelJob]="cancelTriageJobFunc"></job-panel>
+    </div>
+
+    <!-- triage result -->
+    <div class="section">
+        <ul class="nav nav-tabs">
+            <li class="active"><a data-toggle="tab" href="#DebugInfo">DebugInfo</a></li>
+            <li><a data-toggle="tab" href="#Extra" (click)="getExtraProperties()">Extra</a></li>
+            <li><a data-toggle="tab" href="#SBS" (click)="getSideBySideProperties()">SBS</a></li>
+        </ul>
+        
+        <div class="tab-content">
+            <div id="DebugInfo" class="tab-pane fade in active">
+                <div class="flex justify-content-space-between">
+                    <h3>DebugInfo</h3>
+                    <div>
+                        <a class="mr-10" target="_blank" [routerLink]="['/viewer/entityDiff']"
+                            [queryParams]="{viewerType:ViewerType.ViewerDiff,subject1:'',subject2:'',standardStreamPath:triageAnalysis.standardViewRelativeStreamPath,triageStreamPath:triageAnalysis.triagedViewRelativeStreamPath}">
+                            <i class="fa fa-external-link"></i>
+                            <strong>EntityDiff</strong>
+                        </a>
+                        <a target="_blank" [routerLink]="['/viewer/payloadDiff']"
+                            [queryParams]="{viewerType:ViewerType.ViewerDiff,modelIdStr:modelIdStr,externalId1:'',externalId2:'',standardEpRelativeStreamPath:standardEpRelativeStreamPath,triageEpRelativeStreamPath:triageEpRelativeStreamPath}">
+                            <i class="fa fa-external-link"></i>    
+                            <strong>PayloadDiff</strong>
+                        </a>
+                    </div>
+                </div>
+                <!-- three cols table  -->
+                <div *ngIf="debugInfo.triageDebugInfoThreeColTables.length != 0">
+                    <table class="table table-condensed table-responsive table-hover" *ngFor="let triageDebugInfoThreeColTable of debugInfo.triageDebugInfoThreeColTables; trackBy: index">
+                        <caption>
+                            <b class="text-danger" [innerHTML]="triageDebugInfoThreeColTable.title"></b>
+                            <span *ngIf="triageDebugInfoThreeColTable.url != ''">:
+                                <a target="_blank" [href]="triageDebugInfoThreeColTable.url">Debug Stream</a>
+                            </span>
+                        </caption>
+                        <thead>
+                            <tr>
+                                <th *ngFor="let thead of triageDebugInfoThreeColTable.theads; trackBy: index" [innerHTML]="thead"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngFor="let debugInfoThreeCol of triageDebugInfoThreeColTable.debugInfoThreeCols; trackBy: index">
+                                <td [innerHTML]="debugInfoThreeCol.validatorName"></td>
+                                <td [innerHTML]="debugInfoThreeCol.passPercentage"></td>
+                                <td [innerHTML]="debugInfoThreeCol.minPercentage"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+    
+                <!-- five cols table -->
+                <div *ngIf="debugInfo.triageDebugInfoFiveColTables.length != 0">
+                    <table class="table table-condensed table-responsive table-hover" *ngFor="let triageDebugInfoFiveColTable of debugInfo.triageDebugInfoFiveColTables; trackBy: index">
+                        <caption>
+                            <b class="text-danger" [innerHTML]="triageDebugInfoFiveColTable.title"></b>
+                            <span *ngIf="triageDebugInfoFiveColTable.url != ''">:
+                                <a target="_blank" [href]="triageDebugInfoFiveColTable.url">Debug Stream</a>
+                            </span>
+                        </caption>
+                        <thead>
+                            <tr>
+                                <th></th>
+                                <th *ngFor="let thead of triageDebugInfoFiveColTable.theads; trackBy: index" [innerHTML]="thead"></th>
+                            </tr>
+                        </thead>
+                        <tbody *ngFor="let debugInfoFiveCol of triageDebugInfoFiveColTable.debugInfoFiveCols; trackBy: index">
+                            <tr>
+                                <th class="text-primary pointer" (click)="getTriageAnalysisResultByProperty(debugInfoFiveCol, triageDebugInfoFiveColTable.url, TriageAnalysisResultDiaplayType.DebugInfo)"><i [ngClass]="debugInfoFiveCol.expandDetail ? 'fa fa-chevron-up': 'fa fa-chevron-down'"></i></th>                                                        
+                                <td class="pointer" [innerHTML]="debugInfoFiveCol.predicate" (click)="getTriageAnalysisResultByProperty(debugInfoFiveCol, triageDebugInfoFiveColTable.url, TriageAnalysisResultDiaplayType.DebugInfo)"></td>
+                                <td [innerHTML]="debugInfoFiveCol.previousValues"></td>
+                                <td [innerHTML]="debugInfoFiveCol.currentValues"></td>
+                                <td [innerHTML]="debugInfoFiveCol.change"></td>
+                                <td [innerHTML]="debugInfoFiveCol.threshold"></td>
+                            </tr>
+                            <tr *ngIf="debugInfoFiveCol.expandDetail">
+                                <td colspan="6">
+                                    <triage-analysis-result [churnCount]="debugInfoFiveCol.churnCount" [triageChurn]="debugInfoFiveCol.triageChurn" [currentSide1]="currentSide1"
+                                        [currentSide2]="currentSide2" [property]="debugInfoFiveCol.predicate"></triage-analysis-result>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+    
+                <!-- six cols table -->
+                <div *ngIf="debugInfo.triageDebugInfoSixColTables.length != 0">
+                    <table class="table table-condensed table-responsive table-hover" *ngFor="let triageDebugInfoSixColTable of debugInfo.triageDebugInfoSixColTables; trackBy: index">
+                        <caption>
+                            <b class="text-danger" [innerHTML]="triageDebugInfoSixColTable.title"></b>
+                            <span *ngIf="triageDebugInfoSixColTable.url != ''">:
+                                <a target="_blank" [href]="triageDebugInfoSixColTable.url">Debug Stream</a>
+                            </span>
+                        </caption>
+                        <thead>
+                            <tr>
+                                <th></th>
+                                <th *ngFor="let thead of triageDebugInfoSixColTable.theads; trackBy: index" [innerHTML]="thead"></th>
+                            </tr>
+                        </thead>
+                        <tbody *ngFor="let debugInfoSixCol of triageDebugInfoSixColTable.debugInfoSixCols; trackBy: index">
+                            <tr>
+                                <th class="text-primary pointer" (click)="getTriageAnalysisResultByProperty(debugInfoSixCol, triageDebugInfoSixColTable.url, TriageAnalysisResultDiaplayType.DebugInfo)"><i [ngClass]="debugInfoSixCol.expandDetail ? 'fa fa-chevron-up': 'fa fa-chevron-down'"></i></th>                            
+                                <td class="pointer" [innerHTML]="debugInfoSixCol.predicate" (click)="getTriageAnalysisResultByProperty(debugInfoSixCol, triageDebugInfoSixColTable.url, TriageAnalysisResultDiaplayType.DebugInfo)"></td>
+                                <td [innerHTML]="debugInfoSixCol.previousValues"></td>
+                                <td [innerHTML]="debugInfoSixCol.churn"></td>
+                                <td [innerHTML]="debugInfoSixCol.change"></td>
+                                <td [innerHTML]="debugInfoSixCol.minThreshold"></td>
+                                <td [innerHTML]="debugInfoSixCol.maxThreshold"></td>
+                            </tr>
+                            <tr *ngIf="debugInfoSixCol.expandDetail">
+                                <td colspan="7">
+                                    <triage-analysis-result [churnCount]="debugInfoSixCol.churnCount" [triageChurn]="debugInfoSixCol.triageChurn" [currentSide1]="currentSide1"
+                                        [currentSide2]="currentSide2" [property]="debugInfoSixCol.predicate"></triage-analysis-result>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div id="Extra" class="tab-pane fade">
+                <div class="flex justify-content-space-between">
+                    <h3>Extra</h3>
+                    <div>
+                        <a class="mr-10" target="_blank" [routerLink]="['/viewer/entityDiff']"
+                            [queryParams]="{viewerType:ViewerType.ViewerDiff,subject1:'',subject2:'',standardStreamPath:triageAnalysis.standardViewRelativeStreamPath,triageStreamPath:triageAnalysis.triagedViewRelativeStreamPath}">
+                            <i class="fa fa-external-link"></i>
+                            <strong>EntityDiff</strong>
+                        </a>
+                        <a target="_blank" [routerLink]="['/viewer/payloadDiff']"
+                            [queryParams]="{viewerType:ViewerType.ViewerDiff,modelIdStr:modelIdStr,externalId1:'',externalId2:'',standardEpRelativeStreamPath:standardEpRelativeStreamPath,triageEpRelativeStreamPath:triageEpRelativeStreamPath}">
+                            <i class="fa fa-external-link"></i>    
+                            <strong>PayloadDiff</strong>
+                        </a>
+                    </div>
+                </div>
+                <div style="text-align:center" *ngIf="isFetchingExtraProperties">
+                    <br/>
+                    <i class="fa fa-spinner fa-pulse fa-fw fa-3x"></i>
+                </div>
+                <div>
+                    <div *ngIf="!extraPropertyInfos || extraPropertyInfos.length == 0" class="alert alert-info text-center">
+                        <strong>No extra properties found!</strong>
+                    </div>
+                    <div *ngIf="extraPropertyInfos && extraPropertyInfos.length > 0">
+                        <table class="table table-condensed table-responsive table-hover">
+                            <tbody  *ngFor="let propertyInfo of extraPropertyInfos; trackBy: index">
+                                <tr>
+                                    <th class="text-primary pointer" (click)="getTriageAnalysisResultByProperty(propertyInfo, '', TriageAnalysisResultDiaplayType.Extra)"><i [ngClass]="propertyInfo.expandDetail ? 'fa fa-chevron-up': 'fa fa-chevron-down'"></i></th>                                                        
+                                    <td class="pointer" [innerHTML]="propertyInfo.predicate" (click)="getTriageAnalysisResultByProperty(propertyInfo, '', TriageAnalysisResultDiaplayType.Extra)"></td>
+                                </tr>
+                                <tr *ngIf="propertyInfo.expandDetail">
+                                    <td colspan="2">
+                                        <triage-analysis-result [churnCount]="propertyInfo.churnCount" [triageChurn]="propertyInfo.triageChurn" [currentSide1]="currentSide1"
+                                            [currentSide2]="currentSide2" [property]="propertyInfo.predicate"></triage-analysis-result>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div id="SBS" class="tab-pane fade">               
+                <div class="flex justify-content-space-between">
+                    <h3>SBS</h3>
+                    <div>
+                        <a class="mr-10" target="_blank" [routerLink]="['/viewer/entityDiff']"
+                            [queryParams]="{viewerType:ViewerType.ViewerDiff,subject1:'',subject2:'',standardStreamPath:triageAnalysis.standardViewRelativeStreamPath,triageStreamPath:triageAnalysis.triagedViewRelativeStreamPath}">
+                            <i class="fa fa-external-link"></i>
+                            <strong>EntityDiff</strong>
+                        </a>
+                        <a target="_blank" [routerLink]="['/viewer/payloadDiff']"
+                            [queryParams]="{viewerType:ViewerType.ViewerDiff,modelIdStr:modelIdStr,externalId1:'',externalId2:'',standardEpRelativeStreamPath:standardEpRelativeStreamPath,triageEpRelativeStreamPath:triageEpRelativeStreamPath}">
+                            <i class="fa fa-external-link"></i>    
+                            <strong>PayloadDiff</strong>
+                        </a>
+                    </div>
+                </div>
+                <div style="text-align:center" *ngIf="isFetchingSBSProperties">
+                    <br/>
+                    <i class="fa fa-spinner fa-pulse fa-fw fa-3x"></i>
+                </div>
+                <div>
+                    <div *ngIf="!sideBySidePropertyInfos || sideBySidePropertyInfos.length == 0" class="alert alert-info text-center">
+                        <strong>No side by side properties found!</strong>
+                    </div>
+                    <div *ngIf="sideBySidePropertyInfos && sideBySidePropertyInfos.length > 0">
+                        <table class="table table-condensed table-responsive table-hover">
+                            <tbody *ngFor="let propertyInfo of sideBySidePropertyInfos; trackBy: index">
+                                <tr>
+                                    <th class="text-primary pointer" (click)="getSideBySidePairsByProperty(propertyInfo, TriageAnalysisResultDiaplayType.SBS)"><i [ngClass]="propertyInfo.expandDetail ? 'fa fa-chevron-up': 'fa fa-chevron-down'"></i></th>                                                        
+                                    <td class="pointer" [innerHTML]="propertyInfo.predicate" (click)="getSideBySidePairsByProperty(propertyInfo, TriageAnalysisResultDiaplayType.SBS)"></td>
+                                </tr>
+                                <tr *ngIf="propertyInfo.expandDetail">
+                                    <td colspan="2">
+                                        <div *ngIf="isFetchingSidebySideairs">
+                                            <i class="fa fa-spinner fa-pulse fa-fw fa-3x"></i>
+                                        </div>
+                                        <table class="table table-condensed table-responsive table-hover"
+                                            style="word-break: break-all"
+                                            *ngIf="!isFetchingSidebySideairs">
+                                            <thead>
+                                                <th>AddedSubject</th>
+                                                <th>StandardValues</th>
+                                                <!-- <th>TriagedValues</th> -->
+                                                <!-- <th>Property</th> -->
+                                                <th>TriagedValues</th>
+                                                <th>DeletedSubject</th>
+                                                <!-- <th>StandardValues</th> -->
+                                            </thead>
+                                            <tbody>
+                                                <tr *ngFor="let sideBySidePair of propertyInfo.sideBySidePairs; trackBy: index">
+                                                    <td [innerHTML]="sideBySidePair.added.subject"></td>
+                                                    <td>
+                                                        <ul class="list-group">
+                                                            <li *ngFor="let standardValue of sideBySidePair.added.standardValues; trackBy: index" class="list-group-item clearfix">
+                                                                <span [innerHTML]="standardValue.value"></span>
+                                                                <span class="badgeTag" *ngFor="let context of standardValue.contexts; trackBy: index" [innerHTML]="context"></span>
+                                                            </li>
+                                                        </ul>
+                                                    </td>
+                                                    <!-- <td [innerHTML]="sideBySidePair.added.triagedValues"></td> -->
+                                                    <!-- <td [innerHTML]="sideBySidePair.property"></td> -->
+                                                    <td>
+                                                        <ul class="list-group">
+                                                            <li *ngFor="let triagedValue of sideBySidePair.deleted.triagedValues; trackBy: index" class="list-group-item clearfix">
+                                                                <span [innerHTML]="triagedValue.value"></span>
+                                                                <span class="badgeTag" *ngFor="let context of triagedValue.contexts; trackBy: index" [innerHTML]="context"></span>
+                                                            </li>
+                                                        </ul>
+                                                    </td>
+                                                    <td [innerHTML]="sideBySidePair.deleted.subject"></td>
+                                                    <!-- <td [innerHTML]="sideBySidePair.deleted.standardValues"></td> -->
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

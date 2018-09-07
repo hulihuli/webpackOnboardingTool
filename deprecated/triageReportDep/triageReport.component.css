@@ -1,0 +1,69 @@
+.report-infobar{
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+    font-size: 14px;
+}
+
+.report-infobar-title{
+    font-family: 'Times New Roman', Times, serif;
+    font-size: 36px;
+    color: #3c8dbc;
+}
+
+.white-board{
+    margin: 10px;
+    padding: 5px;
+    background: #ffffff;
+    border-radius: 4px;
+    height: 400px;
+    flex-grow:1;
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+    font-size: 14px;
+    overflow:hidden;
+    color: #666;
+}
+
+.total-count{
+    font-size: 32px;
+    font-family: Georgia, 'Times New Roman', Times, serif;
+}
+
+.summary-title{
+    font-size: 32px;
+    font-family: Arial;
+    font-weight: bold;
+    padding: 18px;
+    color: #565353;
+}
+
+.report-section {
+    padding: 15px 23px;
+    background-color: #ecf0f5;
+    border-radius: 4px;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.05);
+}
+
+.tab-content .ngx-charts{
+    overflow: visible !important;
+    /* a unknown div always hide part of charts, so make charts overflow visible */
+}
+
+label{
+    margin-bottom: 0px;
+}
+
+.input-clear {
+    position: absolute;
+    right: 5px;
+    top: 0;
+    bottom: 0;
+    height: 14px;
+    margin: auto;
+    font-size: 14px;
+    cursor: pointer;
+    color: #ccc;
+    z-index: 999;
+}
+
+ngx-charts-number-card .cell .trimmed-label p {
+    overflow: visible !important;
+}

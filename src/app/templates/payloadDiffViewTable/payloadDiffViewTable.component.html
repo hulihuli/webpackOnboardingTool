@@ -1,0 +1,71 @@
+<div class="section" style="margin-top:15px">
+        
+    <div class="text-center"
+            *ngIf="isFetchingPayloadDiffViewer">
+        <i class="fa fa-2x fa-spinner fa-pulse fa-fw"></i>
+    </div>
+    <div *ngIf="!isFetchingPayloadDiffViewer">
+        <div class="flex justify-content-space-between" style="padding:15px">
+            <div class="checkbox">
+                <label  *ngIf="!displayViewSource">
+                    <input type="checkbox" [(ngModel)]="displayCommon"><b>Display Common Value</b>
+                </label>
+                <label *ngIf="displayViewSource">
+                    <input type="checkbox" [(ngModel)]="expandAll"><b>Expand All</b>
+                </label>
+            </div> 
+            <span class="switch">    
+                <label>Table</label>
+                <ui-switch color="#3c8dbc"  [(ngModel)]="displayViewSource"></ui-switch>
+                <label>Json</label>
+            </span> 
+        </div>
+        <table *ngIf="!displayViewSource" class="table table-hover">
+            <thead>
+                <tr>
+                    <th style="width: 20%;">JsonPath</th>
+                    <th style="width: 40%;">Standard</th>
+                    <th *ngIf="displayType != ViewerType.Viewer" style="width: 40%;">Triaged</th>
+                </tr>
+            </thead>
+            <tbody *ngFor="let property of properties; trackBy: index">
+                <tr style="word-break: break-all;">
+                    <td><div><b [innerHtml]="property.jsonPath"></b></div></td>
+                    <td>
+                        <ul class="list-group">
+                        <div>
+                            <li *ngFor="let standardValue of property.standardValues; trackBy: index" class="list-group-item" [innerHtml]="standardValue" [ngClass]="displayType != ViewerType.Viewer && displayCommon? 'list-group-item-warning': 'bg-white'"></li>
+                        </div>
+                        <div *ngIf="displayType == ViewerType.Viewer || displayCommon">
+                            <li *ngFor="let commonValue of property.commonValues; trackBy: index" class="list-group-item" [innerHtml]="commonValue"></li>
+                        </div>
+                        </ul>
+                    </td>
+                    <td *ngIf="displayType != ViewerType.Viewer">
+                        <ul class="list-group">
+                        <div *ngIf="property.triagedValues && property.triagedValues.length != 0">
+                            <li *ngFor="let triagedValue of property.triagedValues; trackBy: index" class="list-group-item" [innerHtml]="triagedValue" [ngClass]="displayType != ViewerType.Viewer && displayCommon? 'list-group-item-warning': 'bg-white'"></li>
+                        </div>
+                        <div *ngIf="displayCommon">
+                            <li *ngFor="let commonValue of property.commonValues; trackBy: index" class="list-group-item" [innerHtml]="commonValue"></li>
+                        </div>
+                        </ul>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <div *ngIf="displayViewSource">
+            <div class="row">
+                <div class="col-sm-6 view-source-item"
+                     [ngClass]="properties.length > 0? 'border-right': ''">
+                    <ngx-json-viewer [expandLevel]="expandAll? 10: 3" [json]="payloadDiffResult.standardPayload? payloadDiffResult.standardPayload: ''"></ngx-json-viewer>
+                </div>
+                <div class="col-sm-6 view-source-item">
+                    <ngx-json-viewer [expandLevel]="expandAll? 10: 3" [json]="payloadDiffResult.triagedPayload? payloadDiffResult.triagedPayload: ''"></ngx-json-viewer>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+</div>
+

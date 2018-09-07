@@ -1,0 +1,54 @@
+<div class="section">
+    <form class="form-inline" (ngSubmit)="getViewerDiffProperties()" #triageInputForm="ngForm">
+        <div class="pd15">
+            <label class="radio-inline">
+                <input type="radio" name="viewerType" [value]="ViewerType.Viewer" [(ngModel)]="viewerType"><b>Viewer</b>
+            </label>
+            <label class="radio-inline">
+                <input type="radio" name="viewerType" [value]="ViewerType.ViewerDiff" [(ngModel)]="viewerType"><b>ViewerDiffOfSingleExternalId</b>
+            </label>
+            <label class="radio-inline">
+                <input type="radio" name="viewerType" [value]="ViewerType.ViewerDiffOfTwo" [(ngModel)]="viewerType"><b>ViewerDiffOfTwoExternalId</b>
+            </label>
+        </div>
+        <div class="flex">
+            <div class="form-group pr10" [ngClass]="viewerType == ViewerType.Viewer? 'whole-width': 'half-width'">
+                <label for="name">standardEpRelativeStreamPath:</label>
+                <input type="text" name="standardEpRelativeStreamPath" class="form-control whole-width" required [(ngModel)]="standardEpRelativeStreamPath">
+            </div>
+            <div *ngIf="viewerType != ViewerType.Viewer" class="form-group half-width">
+                <label for="name">triageEpRelativeStreamPath:</label>
+                <input type="text" name="triageEpRelativeStreamPath" class="form-control whole-width" required [(ngModel)]="triageEpRelativeStreamPath">
+            </div>
+        </div>
+        <div class="flex">
+            <div class="form-group pr10" [ngClass]="viewerType == ViewerType.ViewerDiffOfTwo? 'half-width': 'whole-width'">
+                <label for="name">External Id:</label>
+                <input type="text" name="externalId1" class="form-control whole-width" required [(ngModel)]="externalId1">
+            </div>
+            <div *ngIf="viewerType == ViewerType.ViewerDiffOfTwo" class="form-group half-width">
+                <label for="name">External Id:</label>
+                <input type="text" name="externalId2" class="form-control whole-width"  required [(ngModel)]="externalId2">
+            </div>
+        </div>
+        <div class="flex">
+            <div class="form-group pr10 whole-width">
+                <label for="name">Model Id:</label>
+                <input type="text" name="modelIdStr" class="form-control whole-width" [(ngModel)]="modelIdStr">
+            </div>
+        </div>
+        <br/>
+        <div class="text-c">
+            <button type="submit" class="btn btn-primary" [disabled]="!triageInputForm.form.valid">
+                <i class="fa fa-spinner fa-pulse fa-fw" *ngIf="isFetchingPayloadDiffViewer"></i>
+                Query
+            </button>
+        </div>
+    </form>
+</div>
+<div>
+    <payload-diff-viewer-table 
+        [displayType]="viewerType"
+        [(isFetchingPayloadDiffViewer)]="isFetchingPayloadDiffViewer">
+    </payload-diff-viewer-table>
+</div>

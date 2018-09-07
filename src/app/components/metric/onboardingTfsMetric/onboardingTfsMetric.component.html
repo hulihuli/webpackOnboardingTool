@@ -1,0 +1,164 @@
+<div class="section">
+    <div>
+        <form class="form-inline"
+          style="width: 85%; display:inline-block;"
+          (ngSubmit)="generateOnboardingMetric()"
+          #triageInputForm="ngForm">
+            <div class="form-group"
+                style="margin-left: 15px; width:80%">
+                <label for="tfsQueryId">TFS Query Id:</label>
+                <input type="text"
+                    class="form-control"
+                    style="margin-left: 15px; width:90%"
+                    id="tfsQueryId"
+                    placeholder="db1f0e76-7875-4161-a5d3-a093ea249492"
+                    required
+                    [(ngModel)]="tfsQueryId"
+                    name="tfsQueryId">
+            </div>
+
+            <button type="submit"
+                    class="btn btn-primary"
+                    style="margin-left: 15px;"
+                    [disabled]="!triageInputForm.form.valid || isGeneratingMetric">
+                <i class="fa fa-spinner fa-pulse fa-fw"
+                *ngIf="isGeneratingMetric"></i>
+                <span class="sr-only">Loading...</span>
+                Generate
+            </button>
+        </form>
+
+        <button class="pull-right btn btn-primary" 
+            (click)="exportAsExcel()" 
+            [disabled]="isExportingAsExcel">
+            <i class="fa fa-spinner fa-pulse fa-fw"
+                *ngIf="isExportingAsExcel"></i>
+            <span class="sr-only">Loading...</span>
+            Export as excel
+        </button>
+    </div>
+    
+    <br/>
+    <div style="text-align: center"
+         *ngIf="isGeneratingMetric">
+        <i class="fa fa-spinner fa-pulse fa-fw fa-2x"></i>
+    </div>
+    <div *ngIf="!isGeneratingMetric">
+        <table class="table table-condensed table-responsive table-hover">
+            <thead>
+                <th style="width: 20px"></th>
+                <!-- <th>Id</th> -->
+                <th>Title</th>
+                <!-- <th>TicketingHours</th>
+                <th>QueuedHours</th>
+                <th>E2eEngineeringHours</th>
+                <th>E2eHeadHours</th>
+                <th>EngineeringHours</th> -->
+                <th>E2eTail</th>
+                <!-- <th>CreatedTBy</th>
+                <th>AssignedTo</th>
+                <th>State</th> -->
+            </thead>
+            <tbody *ngFor="let onboardingTfsFeature of onboardingTfsFeatures; trackBy: index">
+                <tr>
+                    <td class="pointer">
+                        <i *ngIf="onboardingTfsFeature.userStories.length != 0"
+                           class="fa text-primary"
+                           [ngClass]="!onboardingTfsFeature.expandUserStory ? 'fa-chevron-down' : 'fa-chevron-up'"
+                           (click)="onboardingTfsFeature.expandUserStory = !onboardingTfsFeature.expandUserStory"></i>
+                    </td>
+                    <td><a target="_blank" [innerHTML]= "onboardingTfsFeature.title" [href]="tfsUrlPrefix + onboardingTfsFeature.id"></a></td>
+                    <td [innerHTML]="onboardingTfsFeature.e2ETailHours"></td>
+                    <!-- <td [innerHTML]="onboardingTfsFeature.id"></td>
+                    <td [innerHTML]="onboardingTfsFeature.id"></td>//
+                    <td [innerHTML]="onboardingTfsFeature.title"></td>
+                    <td [innerHTML]="onboardingTfsFeature.createdDate"></td>
+                    <td [innerHTML]="onboardingTfsFeature.createdBy"></td>
+                    <td [innerHTML]="onboardingTfsFeature.assignedTo"></td>
+                    <td [innerHTML]="WorkItemState[onboardingTfsFeature.state]"
+                        [ngClass]="{'text-muted': onboardingTfsFeature.state == WorkItemState.New, 'text-warning': onboardingTfsFeature.state == WorkItemState.InProgress, 'text-primary': onboardingTfsFeature.state == WorkItemState.Resolved, 'text-info': onboardingTfsFeature.state == WorkItemState.Active, 'text-success': onboardingTfsFeature.state == WorkItemState.Closed}"></td> -->
+                </tr>
+                <tr *ngIf="onboardingTfsFeature.expandUserStory && onboardingTfsFeature.userStories.length != 0">
+                    <td colspan="3">
+                        <table class="table table-condensed table-responsive table-hover"
+                               style="margin-left: 20px">
+                            <thead>
+                                <th style="width: 20px"></th>
+                                <th>Title</th>
+                                <th>Ticketing</th>
+                                <th>Queued</th>
+                                <th>E2EEngineering</th>
+                                <th>E2EHead</th>
+                                <th>Engineering</th>
+                                <th>E2ETail</th>
+                                <!-- <th>Id</th>
+                                <th>Title</th>
+                                <th>CreatedTime</th>
+                                <th>CreatedTBy</th>
+                                <th>AssignedTo</th>
+                                <th>State</th> -->
+                            </thead>
+                            <tbody *ngFor="let userStory of onboardingTfsFeature.userStories; trackBy: index">
+                                <tr>
+                                    <td class="pointer">
+                                        <i *ngIf="userStory.userTasks.length != 0"
+                                           class="fa text-primary"
+                                           [ngClass]="!userStory.expandUserTask ? 'fa-chevron-down' : 'fa-chevron-up'"
+                                           (click)="userStory.expandUserTask = !userStory.expandUserTask"></i>
+                                    </td>
+                                    <td><a target="_blank" [innerHTML]= "userStory.title" [href]="tfsUrlPrefix + userStory.id"></a></td>
+                                    <td [innerHTML]="userStory.ticketingHours"></td>
+                                    <td [innerHTML]="userStory.queuedHours"></td>
+                                    <td [innerHTML]="userStory.e2EEngineeringHours"></td>
+                                    <td [innerHTML]="userStory.e2EHeadHours"></td>
+                                    <td [innerHTML]="userStory.engineeringHours"></td>
+                                    <td [innerHTML]="userStory.e2ETailHours"></td>
+
+                                    <!-- <td [innerHTML]="userStory.id"></td>
+                                    <td [innerHTML]="userStory.id"></td>
+                                    <td [innerHTML]="userStory.title"></td>
+                                    <td [innerHTML]="userStory.createdDate"></td>
+                                    <td [innerHTML]="userStory.createdBy"></td>
+                                    <td [innerHTML]="userStory.assignedTo"></td>
+                                    <td [innerHTML]="WorkItemState[userStory.state]"
+                                        [ngClass]="{'text-muted': onboardingTfsFeature.state == WorkItemState.New, 'text-warning': onboardingTfsFeature.state == WorkItemState.InProgress, 'text-primary': onboardingTfsFeature.state == WorkItemState.Resolved, 'text-info': onboardingTfsFeature.state == WorkItemState.Active, 'text-success': onboardingTfsFeature.state == WorkItemState.Closed}"></td> -->
+                                </tr>
+                                <tr *ngIf="userStory.expandUserTask && userStory.userTasks.length != 0">
+                                    <td colspan="8">
+                                        <table class="table table-condensed table-responsive table-hover"
+                                               style="margin-left: 20px">
+                                            <thead>
+                                                <!-- <th>Id</th> -->
+                                                <th>Title</th>
+                                                <th>E2ETail</th>
+                                                <!-- <th>CreatedTime</th>
+                                                <th>CreatedTBy</th>
+                                                <th>AssignedTo</th>
+                                                <th>State</th> -->
+                                            </thead>
+                                            <tbody *ngFor="let userTask of userStory.userTasks; trackBy: index">
+                                                <tr>
+                                                    <td><a target="_blank" [innerHTML]= "userTask.title" [href]="tfsUrlPrefix + userTask.id"></a></td>
+                                                    <td [innerHTML]="userTask.e2ETailHours"></td>
+                                                    <!-- <td [innerHTML]="userTask.id"></td>
+                                                    <td [innerHTML]="userTask.id"></td>
+                                                    <td [innerHTML]="userTask.id"></td>
+                                                    <td [innerHTML]="userTask.title"></td>
+                                                    <td [innerHTML]="userTask.createdDate"></td>
+                                                    <td [innerHTML]="userTask.createdBy"></td>
+                                                    <td [innerHTML]="userTask.assignedTo"></td>
+                                                    <td [innerHTML]="WorkItemState[userTask.state]"
+                                                        [ngClass]="{'text-muted': onboardingTfsFeature.state == WorkItemState.New, 'text-warning': onboardingTfsFeature.state == WorkItemState.InProgress, 'text-primary': onboardingTfsFeature.state == WorkItemState.Resolved, 'text-info': onboardingTfsFeature.state == WorkItemState.Active, 'text-success': onboardingTfsFeature.state == WorkItemState.Closed}"></td> -->
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>

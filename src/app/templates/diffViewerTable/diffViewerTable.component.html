@@ -1,0 +1,51 @@
+<div class="section" style="margin-top:15px">
+        
+    <div class="text-center"
+            *ngIf="isFetchingEntityDiffViewer">
+        <i class="fa fa-2x fa-spinner fa-pulse fa-fw"></i>
+    </div>
+    <div *ngIf="!isFetchingEntityDiffViewer">
+        <div style="padding:15px">
+            <div class="checkbox">
+                <label>
+                    <input type="checkbox" [(ngModel)]="displayCommon"><b>Display Common Value</b>
+                </label>
+            </div>
+        </div>
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th style="width: 20%;">Property</th>
+                    <th style="width: 40%;">Standard</th>
+                    <th *ngIf="displayType!=ViewerType.Viewer" style="width: 40%;">Triaged</th>
+                </tr>
+            </thead>
+            <tbody *ngFor="let property of properties; trackBy: index">
+                <tr style="word-break: break-all;">
+                    <td><div><b [innerHtml]="property.property"></b></div></td>
+                    <td>
+                        <ul class="list-group">
+                        <div *ngIf="property.standardExist">
+                            <li *ngFor="let standardValue of property.standardValues; trackBy: index" class="list-group-item" [innerHtml]="standardValue" [ngClass]="displayType!=ViewerType.Viewer&&displayCommon?'list-group-item-warning':'bg-white'"></li>
+                        </div>
+                        <div *ngIf="displayType==ViewerType.Viewer || displayCommon">
+                            <li *ngFor="let commonValue of property.commonValues; trackBy: index" class="list-group-item" [innerHtml]="commonValue"></li>
+                        </div>
+                        </ul>
+                    </td>
+                    <td *ngIf="displayType!=ViewerType.Viewer">
+                        <ul class="list-group">
+                        <div *ngIf="property.triagedExist">
+                            <li *ngFor="let triagedValue of property.triagedValues; trackBy: index" class="list-group-item" [innerHtml]="triagedValue" [ngClass]="displayType!=ViewerType.Viewer&&displayCommon?'list-group-item-warning':'bg-white'"></li>
+                        </div>
+                        <div *ngIf="displayCommon">
+                            <li *ngFor="let commonValue of property.commonValues; trackBy: index" class="list-group-item" [innerHtml]="commonValue"></li>
+                        </div>
+                        </ul>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    
+</div>

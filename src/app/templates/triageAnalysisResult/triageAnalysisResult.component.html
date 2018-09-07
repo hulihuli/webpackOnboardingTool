@@ -1,0 +1,1022 @@
+<div>
+    <div>
+        <ul class="nav nav-tabs"
+            *ngIf="churnCount">
+            <li class="dropdown"
+                [ngClass]="{'active': churnCount.deletedLayerCount.totalCount}">
+                <a class="dropdown-toggle"
+                   data-toggle="dropdown"
+                   href="#">
+                    Deleted
+                    <span class="badge"
+                          [innerHtml]="churnCount.deletedLayerCount.totalCount"></span>
+                    <span class="caret"></span>
+                </a>
+                <ul class="dropdown-menu">
+                    <li [ngClass]="{'active': triageAnalysisResultType.deletedEntity}">
+                        <a data-toggle="tab"
+                           href="#deletedEntity">
+                            Entity
+                            <span class="badge"
+                                  [innerHtml]="churnCount.deletedLayerCount.entityCount"></span>
+                        </a>
+                    </li>
+                    <li [ngClass]="{'active': triageAnalysisResultType.deletedProperty}">
+                        <a data-toggle="tab"
+                           href="#deletedProperty">
+                            Property
+                            <span class="badge"
+                                  [innerHtml]="churnCount.deletedLayerCount.propertyCount"></span>
+                        </a>
+                    </li>
+                    <li [ngClass]="{'active': triageAnalysisResultType.deletedValue}">
+                        <a data-toggle="tab"
+                           href="#deletedValue">
+                            Value
+                            <span class="badge"
+                                  [innerHtml]="churnCount.deletedLayerCount.valueCount"></span>
+                        </a>
+                    </li>
+                </ul>
+            </li>
+            <li class="dropdown"
+                [ngClass]="{'active': churnCount.deletedLayerCount.totalCount == 0 && churnCount.addedLayerCount.totalCount != 0}">
+                <a class="dropdown-toggle"
+                   data-toggle="dropdown"
+                   href="#">
+                    Added
+                    <span class="badge"
+                          [innerHtml]="churnCount.addedLayerCount.totalCount"></span>
+                    <span class="caret"></span>
+                </a>
+                <ul class="dropdown-menu">
+                    <li [ngClass]="{'active': triageAnalysisResultType.addedEntity}">
+                        <a data-toggle="tab"
+                           href="#addedEntity">
+                            Entity
+                            <span class="badge"
+                                  [innerHtml]="churnCount.addedLayerCount.entityCount"></span>
+                        </a>
+                    </li>
+                    <li [ngClass]="{'active': triageAnalysisResultType.addedProperty}">
+                        <a data-toggle="tab"
+                           href="#addedProperty">
+                            Property
+                            <span class="badge"
+                                  [innerHtml]="churnCount.addedLayerCount.propertyCount"></span>
+                        </a>
+                    </li>
+                    <li [ngClass]="{'active': triageAnalysisResultType.addedValue}">
+                        <a data-toggle="tab"
+                           href="#addedValue">
+                            Value
+                            <span class="badge"
+                                  [innerHtml]="churnCount.addedLayerCount.valueCount"></span>
+                        </a>
+                    </li>
+                </ul>
+            </li>
+            <li [ngClass]="{'active': churnCount.deletedLayerCount.totalCount == 0 && churnCount.addedLayerCount.totalCount == 0 && churnCount.churnedLayerCount.totalCount != 0}">
+                <a data-toggle="tab"
+                   href="#churn">
+                    Churn
+                    <span class="badge"
+                          [innerHtml]="churnCount.churnedLayerCount.totalCount"></span>
+                </a>
+            </li>
+        </ul>
+
+        <div class="text-center"
+             *ngIf="!triageChurn">
+            <i class="fa fa-spinner fa-pulse fa-fw fa-3x"></i>
+            <span class="sr-only">Loading...</span>
+        </div>
+        <div class="tab-content"
+             *ngIf="triageChurn">
+            <div id="deletedEntity"
+                 class="tab-pane fade"
+                 [ngClass]="{'in active': triageAnalysisResultType.deletedEntity}">
+                <h3>deletedEntity</h3>
+                <table class="table"
+                       *ngIf="triageChurn.deleted.entity"
+                       style="word-break: break-all;">
+                    <thead>
+                        <th style="min-width: 150px; width: 15%;">Subject</th>
+                        <th style="min-width: 150px; width: 15%;">Property</th>
+                        <th style="min-width: 150px; width: 35%;">Standard({{currentSide1.version}})</th>
+                        <th style="min-width: 150px; width: 35%;">Source Url</th>
+                        <!-- <th style="min-width: 150px; max-width: 35%;">Triaged({{currentSide2.version}})</th> -->
+                    </thead>
+                    <tbody *ngFor="let deletedEntity of triageChurn.deleted.entity; trackBy: index">
+                        <tr *ngFor="let propertyValueComparison of deletedEntity.propertyValueComparisons; trackBy: index">
+                            <td *ngIf="propertyValueComparison.isFirst"
+                                [attr.rowspan]="deletedEntity.propertyValueComparisons.length">
+                                <span [innerHTML]="deletedEntity.subject"></span>
+                                <div class="btn-toolbar"
+                                     role="toolbar">
+                                    <div class="btn-group"
+                                         role="group">
+                                        <b>
+                                            <i class="text-primary fa fa-2x fa-exchange pointer"
+                                               data-toggle="modal"
+                                               data-target="#SBSComparison"
+                                               (click)="generateEntityViewerSBS(deletedEntity.subject, ViewerType.Viewer)"></i>
+                                        </b>
+                                    </div>
+                                    <div class="btn-group"
+                                         role="group">
+                                        <b>
+                                            <i class="fa fa-files-o pointer sr-only"
+                                               aria-hidden="true"></i>
+                                        </b>
+                                    </div>
+                                    <div class="btn-group"
+                                         role="group">
+                                        <b>
+                                            <i class="fa fa-columns pointer sr-only"
+                                               aria-hidden="true"></i>
+                                        </b>
+                                    </div>
+                                </div>
+                            </td>
+                            <td [innerHTML]="propertyValueComparison.property"
+                                [ngClass]="{'bg-warning': propertyValueComparison.property == property}"></td>
+                            <td>
+                                <ng-container *ngIf="propertyValueComparison">
+                                    <ul class="list-group">
+                                        <li *ngFor="let standardValue of propertyValueComparison.standardValues; trackBy: index"
+                                            class="list-group-item clearfix">
+                                            <span [innerHTML]="standardValue.value"></span>
+                                            <span class="badgeTag"
+                                                  *ngFor="let context of standardValue.contexts; trackBy: index"
+                                                  [innerHTML]="context"></span>
+                                        </li>
+                                    </ul>
+                                </ng-container>
+                            </td>
+                            <td *ngIf="propertyValueComparison.isFirst"
+                                [attr.rowspan]="deletedEntity.propertyValueComparisons.length">
+                                <ng-container *ngIf="propertyValueComparison">
+                                    <ul class="list-group">
+                                        <li *ngFor="let sourceAndRootUrl of propertyValueComparison.sourceAndRootUrls; trackBy: index"
+                                            class="list-group-item">
+                                            <div>
+                                                SrcUrl:
+                                                <a target="_blank"
+                                                    [ngClass]="{'bg-success': isRawUrl(sourceUrl)}"
+                                                    [href]="sourceAndRootUrl.sourceUrl | safe"
+                                                    [innerHTML]="sourceAndRootUrl.sourceUrl"></a>
+                                            </div>
+                                            <div *ngIf="sourceAndRootUrl.rootUrl">
+                                                <hr/>                                                
+                                                RootUrl:
+                                                <a target="_blank"
+                                                    [href]="sourceAndRootUrl.rootUrl | safe"
+                                                    [innerHTML]="sourceAndRootUrl.rootUrl"></a>
+                                            </div>
+                                            <div *ngIf="sourceAndRootUrl.rootSubject">
+                                                <hr/>
+                                                RootSubject:
+                                                <span [innerHTML]="sourceAndRootUrl.rootSubject"></span>
+                                                <div class="btn-toolbar"
+                                                    role="toolbar">
+                                                   <div class="btn-group"
+                                                        role="group">
+                                                       <b>
+                                                           <i class="text-primary fa fa-2x fa-exchange pointer"
+                                                              data-toggle="modal"
+                                                              data-target="#SBSComparison"
+                                                              (click)="generateEntityViewerSBS(sourceAndRootUrl.rootSubject, ViewerType.ViewerDiff)"></i>
+                                                       </b>
+                                                   </div>
+                                                   <div class="btn-group"
+                                                        role="group">
+                                                       <b>
+                                                           <i class="fa fa-files-o pointer sr-only"
+                                                              aria-hidden="true"></i>
+                                                       </b>
+                                                   </div>
+                                                   <div class="btn-group"
+                                                        role="group">
+                                                       <b>
+                                                           <i class="fa fa-columns pointer sr-only"
+                                                              aria-hidden="true"></i>
+                                                       </b>
+                                                   </div>
+                                               </div>
+                                            </div>
+                                        </li>
+                                    </ul>
+                                </ng-container>
+                            </td>
+                            <!-- <td>
+                                            <ul class="list-group" *ngIf="propertyValueComparison.triagedValues">
+                                                <li *ngFor="let triagedValue of propertyValueComparison.triagedValues" class="list-group-item clearfix">
+                                                    <span [innerHTML]="triagedValue.value"></span>
+                                                    <span class="badgeTag" *ngFor="let context of triagedValue.contexts" [innerHTML]="context"></span>
+                                                </li>
+                                            </ul>
+                                        </td> -->
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div id="deletedProperty"
+                 class="tab-pane fade"
+                 [ngClass]="{'in active': triageAnalysisResultType.deletedProperty}">
+                <h3>deletedProperty</h3>
+                <table class="table"
+                       *ngIf="triageChurn.deleted.property"
+                       style="word-break: break-all;">
+                    <thead>
+                        <th style="min-width: 150px; width: 15%;">Property</th>
+                        <th style="min-width: 150px; width: 15%;">Subject</th>
+                        <th style="min-width: 150px; width: 35%;">Standard({{currentSide1.version}})</th>
+                        <th style="min-width: 150px; width: 35%;">Source Url</th>
+                        <!-- <th style="min-width: 150px; max-width: 35%;">Triaged({{currentSide2.version}})</th> -->
+                    </thead>
+                    <tbody *ngFor="let deletedProperty of triageChurn.deleted.property; trackBy: index">
+                        <tr *ngFor="let subjectValueComparison of deletedProperty.subjectValueComparisons; trackBy: index">
+                            <td *ngIf="subjectValueComparison.isFirst"
+                                [attr.rowspan]="deletedProperty.subjectValueComparisons.length"
+                                [innerHTML]="deletedProperty.property"
+                                [ngClass]="{'bg-warning': deletedProperty.property == property}"></td>
+                            <td>
+                                <span [innerHTML]="subjectValueComparison.subject"></span>
+                                <div class="btn-toolbar"
+                                     role="toolbar">
+                                    <div class="btn-group"
+                                         role="group">
+                                        <b>
+                                            <i class="text-primary fa fa-2x fa-exchange pointer"
+                                               data-toggle="modal"
+                                               data-target="#SBSComparison"
+                                               (click)="generateEntityViewerSBS(subjectValueComparison.subject, ViewerType.ViewerDiff)"></i>
+                                        </b>
+                                    </div>
+                                    <div class="btn-group"
+                                         role="group">
+                                        <b>
+                                            <i class="fa fa-files-o pointer sr-only"
+                                               aria-hidden="true"></i>
+                                        </b>
+                                    </div>
+                                    <div class="btn-group"
+                                         role="group">
+                                        <b>
+                                            <i class="fa fa-columns pointer sr-only"
+                                               aria-hidden="true"></i>
+                                        </b>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <ng-container *ngIf="subjectValueComparison">
+                                    <ul class="list-group">
+                                        <li *ngFor="let standardValue of subjectValueComparison.standardValues; trackBy: index"
+                                            class="list-group-item clearfix">
+                                            <span [innerHTML]="standardValue.value"></span>
+                                            <span class="badgeTag"
+                                                  *ngFor="let context of standardValue.contexts; trackBy: index"
+                                                  [innerHTML]="context"></span>
+                                        </li>
+                                    </ul>
+                                </ng-container>
+                            </td>
+                            <td>
+                                <ng-container *ngIf="subjectValueComparison">
+                                    <ul class="list-group">
+                                        <li *ngFor="let sourceAndRootUrl of subjectValueComparison.sourceAndRootUrls; trackBy: index"
+                                            class="list-group-item">
+                                            <div>
+                                                SrcUrl:
+                                                <a target="_blank"
+                                                    [ngClass]="{'bg-success': isRawUrl(sourceUrl)}"
+                                                    [href]="sourceAndRootUrl.sourceUrl | safe"
+                                                    [innerHTML]="sourceAndRootUrl.sourceUrl"></a>
+                                            </div>
+                                            <div *ngIf="sourceAndRootUrl.rootUrl">
+                                                <hr/>                                                
+                                                RootUrl:
+                                                <a target="_blank"
+                                                    [href]="sourceAndRootUrl.rootUrl | safe"
+                                                    [innerHTML]="sourceAndRootUrl.rootUrl"></a>
+                                            </div>
+                                            <div *ngIf="sourceAndRootUrl.rootSubject">
+                                                <hr/>
+                                                RootSubject:
+                                                <span [innerHTML]="sourceAndRootUrl.rootSubject"></span>
+                                                <div class="btn-toolbar"
+                                                    role="toolbar">
+                                                    <div class="btn-group"
+                                                        role="group">
+                                                        <b>
+                                                            <i class="text-primary fa fa-2x fa-exchange pointer"
+                                                                data-toggle="modal"
+                                                                data-target="#SBSComparison"
+                                                                (click)="generateEntityViewerSBS(sourceAndRootUrl.rootSubject, ViewerType.ViewerDiff)"></i>
+                                                        </b>
+                                                    </div>
+                                                    <div class="btn-group"
+                                                        role="group">
+                                                        <b>
+                                                            <i class="fa fa-files-o pointer sr-only"
+                                                                aria-hidden="true"></i>
+                                                        </b>
+                                                    </div>
+                                                    <div class="btn-group"
+                                                        role="group">
+                                                        <b>
+                                                            <i class="fa fa-columns pointer sr-only"
+                                                                aria-hidden="true"></i>
+                                                        </b>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </li>
+                                    </ul>
+                                </ng-container>
+                            </td>
+                            <!-- <td>
+                                            <ul class="list-group" *ngIf="subjectValueComparison.triagedValues">
+                                                <li *ngFor="let triagedValue of subjectValueComparison.triagedValues" class="list-group-item clearfix">
+                                                    <span [innerHTML]="triagedValue.value"></span>
+                                                    <span class="badgeTag" *ngFor="let context of triagedValue.contexts" [innerHTML]="context"></span>
+                                                </li>
+                                            </ul>
+                                        </td> -->
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div id="deletedValue"
+                 class="tab-pane fade"
+                 [ngClass]="{'in active': triageAnalysisResultType.deletedValue}">
+                <h3>deletedValue</h3>
+                <table class="table"
+                       *ngIf="triageChurn.deleted.value"
+                       style="word-break: break-all;">
+                    <thead>
+                        <th style="min-width: 150px; width: 15%;">Subject</th>
+                        <th style="min-width: 150px; width: 15%;">Property</th>
+                        <th style="min-width: 150px; width: 30%;">Standard({{currentSide1.version}})</th>
+                        <th style="min-width: 150px; width: 30%;">Triaged({{currentSide2.version}})</th>
+                        <th style="min-width: 150px; width: 10%;">Source Url</th>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let deletedValue of triageChurn.deleted.value; trackBy: index">
+                            <td>
+                                <span [innerHTML]="deletedValue.subject"></span>
+                                <div class="btn-toolbar"
+                                     role="toolbar">
+                                    <div class="btn-group"
+                                         role="group">
+                                        <b>
+                                            <i class="text-primary fa fa-2x fa-exchange pointer"
+                                               data-toggle="modal"
+                                               data-target="#SBSComparison"
+                                               (click)="generateEntityViewerSBS(deletedValue.subject, ViewerType.ViewerDiff)"></i>
+                                        </b>
+                                    </div>
+                                    <div class="btn-group"
+                                         role="group">
+                                        <b>
+                                            <i class="fa fa-files-o pointer sr-only"
+                                               aria-hidden="true"></i>
+                                        </b>
+                                    </div>
+                                    <div class="btn-group"
+                                         role="group">
+                                        <b>
+                                            <i class="fa fa-columns pointer sr-only"
+                                               aria-hidden="true"></i>
+                                        </b>
+                                    </div>
+                                </div>
+                            </td>
+                            <td [innerHTML]="deletedValue.property"
+                                [ngClass]="{'bg-warning': deletedValue.property == property}"></td>
+                            <td>
+                                <ng-container *ngIf="deletedValue">
+                                    <ul class="list-group">
+                                        <li *ngFor="let standardValue of deletedValue.standardValues; trackBy: index"
+                                            class="list-group-item clearfix">
+                                            <span [innerHTML]="standardValue.value"></span>
+                                            <span class="badgeTag"
+                                                  *ngFor="let context of standardValue.contexts; trackBy: index"
+                                                  [innerHTML]="context"></span>
+                                        </li>
+                                    </ul>
+                                </ng-container>
+                            </td>
+                            <td>
+                                <ul class="list-group"
+                                    *ngIf="deletedValue.triagedValues">
+                                    <li *ngFor="let triagedValue of deletedValue.triagedValues; trackBy: index"
+                                        class="list-group-item clearfix">
+                                        <span [innerHTML]="triagedValue.value"></span>
+                                        <span class="badgeTag"
+                                              *ngFor="let context of triagedValue.contexts; trackBy: index"
+                                              [innerHTML]="context"></span>
+                                    </li>
+                                </ul>
+                            </td>
+                            <td>
+                                <ul class="list-group"
+                                    *ngIf="deletedValue.sourceAndRootUrls">
+                                    <li *ngFor="let sourceAndRootUrl of deletedValue.sourceAndRootUrls; trackBy: index"
+                                            class="list-group-item">
+                                        <div>
+                                            SrcUrl:
+                                            <a target="_blank"
+                                                [ngClass]="{'bg-success': isRawUrl(sourceUrl)}"
+                                                [href]="sourceAndRootUrl.sourceUrl | safe"
+                                                [innerHTML]="sourceAndRootUrl.sourceUrl"></a>
+                                        </div>
+                                        <div *ngIf="sourceAndRootUrl.rootUrl">
+                                            <hr/>                                                
+                                            RootUrl:
+                                            <a target="_blank"
+                                                [href]="sourceAndRootUrl.rootUrl | safe"
+                                                [innerHTML]="sourceAndRootUrl.rootUrl"></a>
+                                        </div>
+                                        <div *ngIf="sourceAndRootUrl.rootSubject">
+                                            <hr/>
+                                            RootSubject:
+                                            <span [innerHTML]="sourceAndRootUrl.rootSubject"></span>
+                                            <div class="btn-toolbar"
+                                                role="toolbar">
+                                                <div class="btn-group"
+                                                    role="group">
+                                                    <b>
+                                                        <i class="text-primary fa fa-2x fa-exchange pointer"
+                                                            data-toggle="modal"
+                                                            data-target="#SBSComparison"
+                                                            (click)="generateEntityViewerSBS(sourceAndRootUrl.rootSubject, ViewerType.ViewerDiff)"></i>
+                                                    </b>
+                                                </div>
+                                                <div class="btn-group"
+                                                    role="group">
+                                                    <b>
+                                                        <i class="fa fa-files-o pointer sr-only"
+                                                            aria-hidden="true"></i>
+                                                    </b>
+                                                </div>
+                                                <div class="btn-group"
+                                                    role="group">
+                                                    <b>
+                                                        <i class="fa fa-columns pointer sr-only"
+                                                            aria-hidden="true"></i>
+                                                    </b>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </li>
+                                </ul>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div id="addedEntity"
+                 class="tab-pane fade"
+                 [ngClass]="{'in active': triageAnalysisResultType.addedEntity}">
+                <h3>addedEntity</h3>
+                <table class="table"
+                       *ngIf="triageChurn.added.entity"
+                       style="word-break: break-all;">
+                    <thead>
+                        <th style="min-width: 150px; width: 15%;">Subject</th>
+                        <th style="min-width: 150px; width: 15%;">Property</th>
+                        <!-- <th style="min-width: 150px; max-width: 35%;">Standard({{currentSide1.version}})</th> -->
+                        <th style="min-width: 150px; width: 35%;">Triaged({{currentSide2.version}})</th>
+                        <th style="min-width: 150px; width: 35%;">Source Url</th>
+                    </thead>
+                    <tbody *ngFor="let addedEntity of triageChurn.added.entity; trackBy: index">
+                        <tr *ngFor="let propertyValueComparison of addedEntity.propertyValueComparisons; trackBy: index">
+                            <td *ngIf="propertyValueComparison.isFirst"
+                                [attr.rowspan]="addedEntity.propertyValueComparisons.length">
+                                <span [innerHTML]="addedEntity.subject"></span>
+                                <div class="btn-toolbar"
+                                     role="toolbar">
+                                    <div class="btn-group"
+                                         role="group">
+                                        <b>
+                                            <i class="text-primary fa fa-2x fa-exchange pointer"
+                                               data-toggle="modal"
+                                               data-target="#SBSComparison"
+                                               (click)="generateEntityViewerSBS(addedEntity.subject, ViewerType.ViewerDiff)"></i>
+                                        </b>
+                                    </div>
+                                    <div class="btn-group"
+                                         role="group">
+                                        <b>
+                                            <i class="fa fa-files-o pointer sr-only"
+                                               aria-hidden="true"></i>
+                                        </b>
+                                    </div>
+                                    <div class="btn-group"
+                                         role="group">
+                                        <b>
+                                            <i class="fa fa-columns pointer sr-only"
+                                               aria-hidden="true"></i>
+                                        </b>
+                                    </div>
+                                </div>
+                            </td>
+                            <td [innerHTML]="propertyValueComparison.property"
+                                [ngClass]="{'bg-warning': propertyValueComparison.property == property}"></td>
+                            <!-- <td>
+                                            <ng-container *ngIf="propertyValueComparison">
+                                                <ul class="list-group">
+                                                    <li *ngFor="let standardValue of propertyValueComparison.standardValues" class="list-group-item clearfix">
+                                                        <span [innerHTML]="standardValue.value"></span>
+                                                        <span class="badgeTag" *ngFor="let context of standardValue.contexts" [innerHTML]="context"></span>
+                                                    </li>
+                                                </ul>
+                                            </ng-container>
+                                        </td> -->
+                            <td>
+                                <ul class="list-group"
+                                    *ngIf="propertyValueComparison.triagedValues">
+                                    <li *ngFor="let triagedValue of propertyValueComparison.triagedValues; trackBy: index"
+                                        class="list-group-item clearfix">
+                                        <span [innerHTML]="triagedValue.value"></span>
+                                        <span class="badgeTag"
+                                              *ngFor="let context of triagedValue.contexts; trackBy: index"
+                                              [innerHTML]="context"></span>
+                                    </li>
+                                </ul>
+                            </td>
+                            <td *ngIf="propertyValueComparison.isFirst"
+                                [attr.rowspan]="addedEntity.propertyValueComparisons.length">
+                                <ul class="list-group"
+                                    *ngIf="propertyValueComparison.sourceAndRootUrls">
+                                    <li *ngFor="let sourceAndRootUrl of propertyValueComparison.sourceAndRootUrls; trackBy: index"
+                                            class="list-group-item">
+                                        <div>
+                                            SrcUrl:
+                                            <a target="_blank"
+                                                [ngClass]="{'bg-success': isRawUrl(sourceUrl)}"
+                                                [href]="sourceAndRootUrl.sourceUrl | safe"
+                                                [innerHTML]="sourceAndRootUrl.sourceUrl"></a>
+                                        </div>
+                                        <div *ngIf="sourceAndRootUrl.rootUrl">
+                                            <hr/>                                                
+                                            RootUrl:
+                                            <a target="_blank"
+                                                [href]="sourceAndRootUrl.rootUrl | safe"
+                                                [innerHTML]="sourceAndRootUrl.rootUrl"></a>
+                                        </div>
+                                        <div *ngIf="sourceAndRootUrl.rootSubject">
+                                            <hr/>
+                                            RootSubject:
+                                            <span [innerHTML]="sourceAndRootUrl.rootSubject"></span>
+                                            <div class="btn-toolbar"
+                                                role="toolbar">
+                                                <div class="btn-group"
+                                                    role="group">
+                                                    <b>
+                                                        <i class="text-primary fa fa-2x fa-exchange pointer"
+                                                            data-toggle="modal"
+                                                            data-target="#SBSComparison"
+                                                            (click)="generateEntityViewerSBS(sourceAndRootUrl.rootSubject, ViewerType.ViewerDiff)"></i>
+                                                    </b>
+                                                </div>
+                                                <div class="btn-group"
+                                                    role="group">
+                                                    <b>
+                                                        <i class="fa fa-files-o pointer sr-only"
+                                                            aria-hidden="true"></i>
+                                                    </b>
+                                                </div>
+                                                <div class="btn-group"
+                                                    role="group">
+                                                    <b>
+                                                        <i class="fa fa-columns pointer sr-only"
+                                                            aria-hidden="true"></i>
+                                                    </b>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </li>
+                                </ul>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div id="addedProperty"
+                 class="tab-pane fade"
+                 [ngClass]="{'in active': triageAnalysisResultType.addedProperty}">
+                <h3>addedProperty</h3>
+                <table class="table"
+                       *ngIf="triageChurn.added.property"
+                       style="word-break: break-all;">
+                    <thead>
+                        <th style="min-width: 150px; width: 15%;">Property</th>
+                        <th style="min-width: 150px; width: 15%;">Subject</th>
+                        <!-- <th style="min-width: 150px; max-width: 35%;">Standard({{currentSide1.version}})</th> -->
+                        <th style="min-width: 150px; width: 35%;">Triaged({{currentSide2.version}})</th>
+                        <th style="min-width: 150px; width: 35%;">Source Url</th>
+                    </thead>
+                    <tbody *ngFor="let addedProperty of triageChurn.added.property; trackBy: index">
+                        <tr *ngFor="let subjectValueComparison of addedProperty.subjectValueComparisons; trackBy: index">
+                            <td *ngIf="subjectValueComparison.isFirst"
+                                [attr.rowspan]="addedProperty.subjectValueComparisons.length"
+                                [innerHTML]="addedProperty.property"
+                                [ngClass]="{'bg-warning': addedProperty.property == property}"></td>
+                            <td>
+                                <span [innerHTML]="subjectValueComparison.subject"></span>
+                                <div class="btn-toolbar"
+                                     role="toolbar">
+                                    <div class="btn-group"
+                                         role="group">
+                                        <b>
+                                            <i class="text-primary fa fa-2x fa-exchange pointer"
+                                               data-toggle="modal"
+                                               data-target="#SBSComparison"
+                                               (click)="generateEntityViewerSBS(subjectValueComparison.subject, ViewerType.ViewerDiff)"></i>
+                                        </b>
+                                    </div>
+                                    <div class="btn-group"
+                                         role="group">
+                                        <b>
+                                            <i class="fa fa-files-o pointer sr-only"
+                                               aria-hidden="true"></i>
+                                        </b>
+                                    </div>
+                                    <div class="btn-group"
+                                         role="group">
+                                        <b>
+                                            <i class="fa fa-columns pointer sr-only"
+                                               aria-hidden="true"></i>
+                                        </b>
+                                    </div>
+                                </div>
+                            </td>
+                            <!-- <td>
+                                            <ng-container *ngIf="subjectValueComparison">
+                                                <ul class="list-group">
+                                                    <li *ngFor="let standardValue of subjectValueComparison.standardValues" class="list-group-item clearfix">
+                                                        <span [innerHTML]="standardValue.value"></span>
+                                                        <span class="badgeTag" *ngFor="let context of standardValue.contexts" [innerHTML]="context"></span>
+                                                    </li>
+                                                </ul>
+                                            </ng-container>
+                                        </td> -->
+                            <td>
+                                <ul class="list-group"
+                                    *ngIf="subjectValueComparison.triagedValues">
+                                    <li *ngFor="let triagedValue of subjectValueComparison.triagedValues; trackBy: index"
+                                        class="list-group-item clearfix">
+                                        <span [innerHTML]="triagedValue.value"></span>
+                                        <span class="badgeTag"
+                                              *ngFor="let context of triagedValue.contexts; trackBy: index"
+                                              [innerHTML]="context"></span>
+                                    </li>
+                                </ul>
+                            </td>
+                            <td>
+                                <ul class="list-group"
+                                    *ngIf="subjectValueComparison.sourceAndRootUrls">
+                                    <li *ngFor="let sourceAndRootUrl of subjectValueComparison.sourceAndRootUrls; trackBy: index"
+                                            class="list-group-item">
+                                        <div>
+                                            SrcUrl:
+                                            <a target="_blank"
+                                                [ngClass]="{'bg-success': isRawUrl(sourceUrl)}"
+                                                [href]="sourceAndRootUrl.sourceUrl | safe"
+                                                [innerHTML]="sourceAndRootUrl.sourceUrl"></a>
+                                        </div>
+                                        <div *ngIf="sourceAndRootUrl.rootUrl">
+                                            <hr/>                                                
+                                            RootUrl:
+                                            <a target="_blank"
+                                                [href]="sourceAndRootUrl.rootUrl | safe"
+                                                [innerHTML]="sourceAndRootUrl.rootUrl"></a>
+                                        </div>
+                                        <div *ngIf="sourceAndRootUrl.rootSubject">
+                                            <hr/>
+                                            RootSubject:
+                                            <span [innerHTML]="sourceAndRootUrl.rootSubject"></span>
+                                            <div class="btn-toolbar"
+                                                role="toolbar">
+                                                <div class="btn-group"
+                                                    role="group">
+                                                    <b>
+                                                        <i class="text-primary fa fa-2x fa-exchange pointer"
+                                                            data-toggle="modal"
+                                                            data-target="#SBSComparison"
+                                                            (click)="generateEntityViewerSBS(sourceAndRootUrl.rootSubject, ViewerType.ViewerDiff)"></i>
+                                                    </b>
+                                                </div>
+                                                <div class="btn-group"
+                                                    role="group">
+                                                    <b>
+                                                        <i class="fa fa-files-o pointer sr-only"
+                                                            aria-hidden="true"></i>
+                                                    </b>
+                                                </div>
+                                                <div class="btn-group"
+                                                    role="group">
+                                                    <b>
+                                                        <i class="fa fa-columns pointer sr-only"
+                                                            aria-hidden="true"></i>
+                                                    </b>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </li>
+                                </ul>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div id="addedValue"
+                 class="tab-pane fade"
+                 [ngClass]="{'in active': triageAnalysisResultType.addedValue}">
+                <h3>addedValue</h3>
+                <table class="table"
+                       *ngIf="triageChurn.added.value"
+                       style="word-break: break-all;">
+                    <thead>
+                        <th style="min-width: 150px; width: 15%;">Subject</th>
+                        <th style="min-width: 150px; width: 15%;">Property</th>
+                        <th style="min-width: 150px; width: 30%;">Standard({{currentSide1.version}})</th>
+                        <th style="min-width: 150px; width: 30%;">Triaged({{currentSide2.version}})</th>
+                        <th style="min-width: 150px; width: 10%;">Source Url</th>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let addedValue of triageChurn.added.value; trackBy: index">
+                            <td>
+                                <span [innerHTML]="addedValue.subject"></span>
+                                <div class="btn-toolbar"
+                                     role="toolbar">
+                                    <div class="btn-group"
+                                         role="group">
+                                        <b>
+                                            <i class="text-primary fa fa-2x fa-exchange pointer"
+                                               data-toggle="modal"
+                                               data-target="#SBSComparison"
+                                               (click)="generateEntityViewerSBS(addedValue.subject, ViewerType.ViewerDiff)"></i>
+                                        </b>
+                                    </div>
+                                    <div class="btn-group"
+                                         role="group">
+                                        <b>
+                                            <i class="fa fa-files-o pointer sr-only"
+                                               aria-hidden="true"></i>
+                                        </b>
+                                    </div>
+                                    <div class="btn-group"
+                                         role="group">
+                                        <b>
+                                            <i class="fa fa-columns pointer sr-only"
+                                               aria-hidden="true"></i>
+                                        </b>
+                                    </div>
+                                </div>
+                            </td>
+                            <td [innerHTML]="addedValue.property"
+                                [ngClass]="{'bg-warning': addedValue.property == property}"></td>
+                            <td>
+                                <ng-container *ngIf="addedValue">
+                                    <ul class="list-group">
+                                        <li *ngFor="let standardValue of addedValue.standardValues; trackBy: index"
+                                            class="list-group-item clearfix">
+                                            <span [innerHTML]="standardValue.value"></span>
+                                            <span class="badgeTag"
+                                                  *ngFor="let context of standardValue.contexts; trackBy: index"
+                                                  [innerHTML]="context"></span>
+                                        </li>
+                                    </ul>
+                                </ng-container>
+                            </td>
+                            <td>
+                                <ul class="list-group"
+                                    *ngIf="addedValue.triagedValues">
+                                    <li *ngFor="let triagedValue of addedValue.triagedValues; trackBy: index"
+                                        class="list-group-item clearfix">
+                                        <span [innerHTML]="triagedValue.value"></span>
+                                        <span class="badgeTag"
+                                              *ngFor="let context of triagedValue.contexts; trackBy: index"
+                                              [innerHTML]="context"></span>
+                                    </li>
+                                </ul>
+                            </td>
+                            <td>
+                                <ul class="list-group"
+                                    *ngIf="addedValue.sourceAndRootUrls">
+                                    <li *ngFor="let sourceAndRootUrl of addedValue.sourceAndRootUrls; trackBy: index"
+                                            class="list-group-item">
+                                        <div>
+                                            SrcUrl:
+                                            <a target="_blank"
+                                                [ngClass]="{'bg-success': isRawUrl(sourceUrl)}"
+                                                [href]="sourceAndRootUrl.sourceUrl | safe"
+                                                [innerHTML]="sourceAndRootUrl.sourceUrl"></a>
+                                        </div>
+                                        <div *ngIf="sourceAndRootUrl.rootUrl">
+                                            <hr/>                                                
+                                            RootUrl:
+                                            <a target="_blank"
+                                                [href]="sourceAndRootUrl.rootUrl | safe"
+                                                [innerHTML]="sourceAndRootUrl.rootUrl"></a>
+                                        </div>
+                                        <div *ngIf="sourceAndRootUrl.rootSubject">
+                                            <hr/>
+                                            RootSubject:
+                                            <span [innerHTML]="sourceAndRootUrl.rootSubject"></span>
+                                            <div class="btn-toolbar"
+                                                role="toolbar">
+                                                <div class="btn-group"
+                                                    role="group">
+                                                    <b>
+                                                        <i class="text-primary fa fa-2x fa-exchange pointer"
+                                                            data-toggle="modal"
+                                                            data-target="#SBSComparison"
+                                                            (click)="generateEntityViewerSBS(sourceAndRootUrl.rootSubject, ViewerType.ViewerDiff)"></i>
+                                                    </b>
+                                                </div>
+                                                <div class="btn-group"
+                                                    role="group">
+                                                    <b>
+                                                        <i class="fa fa-files-o pointer sr-only"
+                                                            aria-hidden="true"></i>
+                                                    </b>
+                                                </div>
+                                                <div class="btn-group"
+                                                    role="group">
+                                                    <b>
+                                                        <i class="fa fa-columns pointer sr-only"
+                                                            aria-hidden="true"></i>
+                                                    </b>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </li>
+                                </ul>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div id="churn"
+                 class="tab-pane fade"
+                 [ngClass]="{'in active': triageAnalysisResultType.churn}">
+                <h3>churn</h3>
+                <table class="table"
+                       *ngIf="triageChurn.churned.value"
+                       style="word-break: break-all;">
+                    <thead>
+                        <th style="min-width: 150px; width: 15%;">Subject</th>
+                        <th style="min-width: 150px; width: 15%;">Property</th>
+                        <th style="min-width: 150px; width: 30%;">Standard({{currentSide1.version}})</th>
+                        <th style="min-width: 150px; width: 30%;">Triaged({{currentSide2.version}})</th>
+                        <th style="min-width: 150px; width: 10%;">Source Url</th>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let churnedValue of triageChurn.churned.value; trackBy: index">
+                            <td>
+                                <span [innerHTML]="churnedValue.subject"></span>
+                                <div class="btn-toolbar"
+                                     role="toolbar">
+                                    <div class="btn-group"
+                                         role="group">
+                                        <b>
+                                            <i class="text-primary fa fa-2x fa-exchange pointer"
+                                               data-toggle="modal"
+                                               data-target="#SBSComparison"
+                                               (click)="generateEntityViewerSBS(churnedValue.subject, ViewerType.ViewerDiff)"></i>
+                                        </b>
+                                    </div>
+                                    <div class="btn-group"
+                                         role="group">
+                                        <b>
+                                            <i class="fa fa-files-o pointer sr-only"
+                                               aria-hidden="true"></i>
+                                        </b>
+                                    </div>
+                                    <div class="btn-group"
+                                         role="group">
+                                        <b>
+                                            <i class="fa fa-columns pointer sr-only"
+                                               aria-hidden="true"></i>
+                                        </b>
+                                    </div>
+                                </div>
+                            </td>
+                            <td [innerHTML]="churnedValue.property"
+                                [ngClass]="{'bg-warning': churnedValue.property == property}"></td>
+                            <td>
+                                <ng-container *ngIf="churnedValue">
+                                    <ul class="list-group">
+                                        <li *ngFor="let standardValue of churnedValue.standardValues; trackBy: index"
+                                            class="list-group-item clearfix">
+                                            <span [innerHTML]="standardValue.value"></span>
+                                            <span class="badgeTag"
+                                                  *ngFor="let context of standardValue.contexts; trackBy: index"
+                                                  [innerHTML]="context"></span>
+                                        </li>
+                                    </ul>
+                                </ng-container>
+                            </td>
+                            <td>
+                                <ul class="list-group"
+                                    *ngIf="churnedValue.triagedValues">
+                                    <li *ngFor="let triagedValue of churnedValue.triagedValues; trackBy: index"
+                                        class="list-group-item clearfix">
+                                        <span [innerHTML]="triagedValue.value"></span>
+                                        <span class="badgeTag"
+                                              *ngFor="let context of triagedValue.contexts; trackBy: index"
+                                              [innerHTML]="context"></span>
+                                    </li>
+                                </ul>
+                            </td>
+                            <td>
+                                <ul class="list-group"
+                                    *ngIf="churnedValue.sourceAndRootUrls">
+                                    <li *ngFor="let sourceAndRootUrl of churnedValue.sourceAndRootUrls; trackBy: index"
+                                            class="list-group-item">
+                                        <div>
+                                            SrcUrl:
+                                            <a target="_blank"
+                                                [ngClass]="{'bg-success': isRawUrl(sourceUrl)}"
+                                                [href]="sourceAndRootUrl.sourceUrl | safe"
+                                                [innerHTML]="sourceAndRootUrl.sourceUrl"></a>
+                                        </div>
+                                        <div *ngIf="sourceAndRootUrl.rootUrl">
+                                            <hr/>                                                
+                                            RootUrl:
+                                            <a target="_blank"
+                                                [href]="sourceAndRootUrl.rootUrl | safe"
+                                                [innerHTML]="sourceAndRootUrl.rootUrl"></a>
+                                        </div>
+                                        <div *ngIf="sourceAndRootUrl.rootSubject">
+                                            <hr/>
+                                            RootSubject:
+                                            <span [innerHTML]="sourceAndRootUrl.rootSubject"></span>
+                                            <div class="btn-toolbar"
+                                                role="toolbar">
+                                                <div class="btn-group"
+                                                    role="group">
+                                                    <b>
+                                                        <i class="text-primary fa fa-2x fa-exchange pointer"
+                                                            data-toggle="modal"
+                                                            data-target="#SBSComparison"
+                                                            (click)="generateEntityViewerSBS(sourceAndRootUrl.rootSubject, ViewerType.ViewerDiff)"></i>
+                                                    </b>
+                                                </div>
+                                                <div class="btn-group"
+                                                    role="group">
+                                                    <b>
+                                                        <i class="fa fa-files-o pointer sr-only"
+                                                            aria-hidden="true"></i>
+                                                    </b>
+                                                </div>
+                                                <div class="btn-group"
+                                                    role="group">
+                                                    <b>
+                                                        <i class="fa fa-columns pointer sr-only"
+                                                            aria-hidden="true"></i>
+                                                    </b>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </li>
+                                </ul>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <!-- popup SBS comparison -->
+    <!-- Large modal -->
+    <div class="modal fade"
+         tabindex="-1"
+         role="dialog"
+         id="SBSComparison">
+        <div class="modal-dialog modal-lg"
+             style="width:100%;"
+             role="document">
+            <div class="modal-content">
+                <div class="container-fluid">
+                    <div class="row">
+                        <div class="col-sm-12 pd-15 pt-10">
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                            <div class="mt-30">
+                                <diff-viewer-table [displayType]="displayType"
+                                                   [(isFetchingEntityDiffViewer)]="isFetchingEntityDiffViewer">
+                                </diff-viewer-table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

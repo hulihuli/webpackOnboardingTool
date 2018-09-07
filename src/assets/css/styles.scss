@@ -1,0 +1,62 @@
+$border-color: #1e88e5;
+$section-bk-color: #fff;
+.section {
+    padding: 15px;
+    background-color: $section-bk-color;
+    border: 1px solid $border-color;
+    border-radius: 4px;
+    -webkit-box-shadow: 0 1px 1px rgba(0, 0, 0, .05);
+    box-shadow: 0 1px 1px rgba(0, 0, 0, .05);
+}
+
+.pointer{
+    cursor: pointer;
+}
+
+.flex {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+
+    &.justify-content-center{
+        justify-content: center;
+    }
+
+    &.justify-content-left {
+        justify-content: flex-start;
+    }
+
+    &.justify-content-right{
+        justify-content: flex-end;
+    }
+
+    &.justify-content-space-between{
+        justify-content: space-between;
+    }
+
+    &.justify-content-space-around{
+        justify-content: space-around;
+    }
+
+    &.align-items-center{
+        align-items: center;
+    }
+
+    &.align-items-top{
+        align-items: flex-start;
+    }
+
+    &.flex-col-direction {
+        flex-direction: column;
+    }
+
+    & > .dock-left{
+        margin-left: 0px;
+        padding-left: 0px;
+    }
+
+    & > .dock-right{
+        margin-right: 0px;
+        padding-right: 0px;
+    }
+}

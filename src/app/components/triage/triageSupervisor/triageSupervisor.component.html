@@ -1,0 +1,228 @@
+<div class="section">
+    <div class="flex justify-content-space-between">
+        <!-- search view supervisor -->
+        <div style="width: 40%">
+            <div class="input-group">
+                <input type="text" class="form-control" placeholder="Search" name="search" [(ngModel)]="query" (ngModelChange)="querySupervisor()">
+                <div class="input-group-btn">
+                    <button class="btn btn-default" (click)="querySupervisor()">
+                        <i class="fa fa-search"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <!-- add view supervisor -->
+        <div class="flex justify-content-space-between">
+            <button type="button"
+                    class="btn btn-primary"
+                    style="margin-right: 15px;"
+                    data-toggle="modal"
+                    data-target="#newViewSupervisor"
+                    (click)="loadViewInfo()">Add Supervisor</button>
+        
+            <button class="btn btn-primary"
+                    (click)="loadTriageViewSupervisors()">
+                <i class="fa fa-spinner fa-pulse fa-fw"
+                   *ngIf="isFetchingViewSupervisor"></i>
+                <span class="sr-only">Loading...</span>
+                Reload supervisor
+            </button>
+        </div>
+    </div>
+
+    <br/>
+    <br/>
+
+    <div>
+        <div class="flex justify-content-space-between">
+            <div>
+                <label class="radio-inline">
+                    <input type="radio" name="displayType" value="Errored" [(ngModel)]="displayType" (ngModelChange)="addRouterQueryParams()">Errored
+                </label>
+                <label class="radio-inline">
+                    <input type="radio" name="displayType" value="Triaged" [(ngModel)]="displayType" (ngModelChange)="addRouterQueryParams()">Triaged
+                </label>
+                <label class="radio-inline">
+                    <input type="radio" name="displayType" value="All" [(ngModel)]="displayType" (ngModelChange)="addRouterQueryParams()">All
+                </label>
+                <label class="radio-inline">
+                    <input type="radio" name="displayType" value="Standard" [(ngModel)]="displayType" (ngModelChange)="addRouterQueryParams()">Standard
+                </label>
+                <label class="radio-inline">
+                    <input type="radio" name="displayType" value="Updating" [(ngModel)]="displayType" (ngModelChange)="addRouterQueryParams()">Updating
+                </label>
+                <label class="radio-inline">
+                    <input type="radio" name="displayType" value="MissState" [(ngModel)]="displayType" (ngModelChange)="addRouterQueryParams()">MissState
+                </label>
+                <label class="radio-inline">
+                    <input type="radio" name="displayType" value="LongToGraph" [(ngModel)]="displayType" (ngModelChange)="addRouterQueryParams()">LongToGraph
+                </label>
+            </div>
+        </div>
+        <br/>
+        <table class="table" style="word-break: break-word">
+            <thead>
+                <th></th>
+                <th class="pointer" (click)="sortTriageViews('Id',idDesc)">Id
+                     <i class="text-primary fa" [ngClass]="idDesc? 'fa-caret-down' : 'fa-caret-up'"></i>
+                </th>
+                <th>Name</th>
+                <th>CurrentState</th>
+                <th>OriginalState</th>
+                <th>Version</th>
+                <th>VersionState</th>
+                <th>CompletedTime</th>
+                <th *ngIf="false">LatestCompletedVersion</th>
+                <th *ngIf="false">LatestCompletedVersionState</th>
+                <th class="pointer" (click)="sortTriageViews('LatestVersionLatency')">LastLatency 
+                    <i class="text-primary fa" [ngClass]="latestVersionLatencyDesc? 'fa-caret-down' : 'fa-caret-up'"></i>
+                </th>
+                <th class="pointer" (click)="sortTriageViews('LatestSucceedVersionLatency')">LastSucceedLatency 
+                    <i class="text-primary fa" [ngClass]="latestSucceedVersionLatencyDesc? 'fa-caret-down' : 'fa-caret-up'"></i>
+                </th>
+                <th>Segment</th>
+                <th>Owner</th>
+                <th *ngIf="false">JobState</th>
+                <th>Analysis</th>
+                <th *ngIf="false">TFS</th>
+                <th>Action</th>
+            </thead>
+            <tbody *ngFor="let triageViewSupervisor of setPage(triageViewSupervisors | displayTypeFilter: displayType); trackBy: index">
+                <tr>
+                    <th class="text-primary" (click)="expandStatistic(triageViewSupervisor)">
+                        <i [ngClass]="triageViewSupervisor.expandStatistic ? 'fa fa-chevron-up': 'fa fa-chevron-down'"></i>
+                    </th>
+                    <th [innerHTML]="triageViewSupervisor.id"></th>
+                    <th>
+                        <a target="_blank" [href]="triageViewSupervisor.entitySpaceViewUrl" [innerHTML]="triageViewSupervisor.entitySpaceViewName"></a>
+                    </th>
+                    <th [innerHTML]="triageViewSupervisor.currentState" 
+                        [ngClass]="{'bg-warning':triageViewSupervisor.currentState != triageViewSupervisor.originalState}">
+                    </th>
+                    <th [innerHTML]="triageViewSupervisor.originalState"></th>
+                    <th [innerHTML]="triageViewSupervisor.latestVersion"></th>
+                    <th class="text-success" [ngClass]="{'text-danger !important': triageViewSupervisor.latestVersionState==='Triaged' || 
+                        triageViewSupervisor.latestVersionState==='Errored', 'text-warning !important': triageViewSupervisor.latestVersionState!=='Standard'}" 
+                        [innerHTML]="triageViewSupervisor.latestVersionState"></th>
+                    <th [innerHTML]="triageViewSupervisor.latestSucceedTime"></th>
+                    <th *ngIf="false" [innerHTML]="triageViewSupervisor.latestCompletedVersion"></th>
+                    <th *ngIf="false" [innerHTML]="triageViewSupervisor.latestCompletedVersionState"></th>
+                    <th [innerHTML]="triageViewSupervisor.latestVersionLatency"></th>
+                    <th [innerHTML]="triageViewSupervisor.latestSucceedVersionLatency" [ngClass]="{'text-danger bg-danger':isMissingSla(triageViewSupervisor)}"></th>
+                    <th>
+                        <div [title]="triageViewSupervisor.segment" class="ellipsis" *ngIf="!triageViewSupervisor.displaySegmentNameEditor" [innerHTML]="triageViewSupervisor.segment" 
+                            (dblclick)="changeSegmentName(triageViewSupervisor)">
+                        </div>
+                        <input *ngIf="triageViewSupervisor.displaySegmentNameEditor" type="text" class="form-control" style="width:auto" 
+                            [(ngModel)]="triageViewSupervisor.segment" (blur)="updateSegment(triageViewSupervisor)" [id]="triageViewSupervisor.id" Autofocus>
+                    </th>
+                    <th>
+                        <div *ngIf="!triageViewSupervisor.displayOwnerNameEditor" [innerHTML]="triageViewSupervisor.owner" 
+                            (dblclick)="changeOwnerName(triageViewSupervisor)"></div>
+                        <input *ngIf="triageViewSupervisor.displayOwnerNameEditor" type="text" class="form-control" style="width:auto" 
+                            [(ngModel)]="triageViewSupervisor.owner" (blur)="updateOwner(triageViewSupervisor)" [id]="triageViewSupervisor.id" Autofocus>
+                    </th>
+                    <th *ngIf="false" [innerHTML]="triageViewSupervisor.jobstate"></th>
+                    <th>
+                        <a [ngClass]="{'text-success': triageViewSupervisor.latestVersionState==='Triaged'}" [routerLink]="['/triage/analysis/', triageViewSupervisor.customerIdEnv, triageViewSupervisor.viewKey]" [innerHTML]="'analysis'"></a>
+                    </th>
+                    <th *ngIf="false" [innerHTML]="triageViewSupervisor.tfsUrl"></th>
+                    <th (mouseover)="triageViewSupervisor.mouseOverDelete = true;" (mouseout)="triageViewSupervisor.mouseOverDelete = false;">
+                        <i class="fa fa-times pointer" (click)="deleteTriageViewSupervisor(triageViewSupervisor.id)" 
+                        [ngClass]="triageViewSupervisor.mouseOverDelete ? 'text-danger': 'text-primary'"></i>
+                    </th>
+                </tr>
+                <tr *ngIf="filterView(triageViewSupervisor) && triageViewSupervisor.expandStatistic">
+                    <td colspan="13">
+                        <triage-view-statistic [triageViewSupervisor]="triageViewSupervisor">
+                        </triage-view-statistic>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <table-pagination [numOfPages]="numOfPages" [numPerPage]="numPerPage" [(currentPage)]="currentPage" class="pagination-small"></table-pagination>
+    </div>
+
+    <!-- new view supervisor Modal -->
+    <div class="modal fade" id="newViewSupervisor" role="dialog">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h4 class="modal-title">New supervisor</h4>
+                </div>
+                <div class="modal-body">
+                    <form class="form-horizontal" #triageInputForm="ngForm">
+                        <div class="form-group">
+                            <label class="control-label col-sm-2" for="customerId">CustomerId:</label>
+                            <div class="col-sm-9">
+                                <select class="form-control" name="customerId" [(ngModel)]="currentCustomerId" (change)="changeCustomerId()">
+                                    <option *ngFor="let customerId of customerIds; trackBy: index" [ngValue]="customerId" [innerHTML]="customerId"></option>
+                                </select>
+                            </div>
+                            <i class="fa fa-spinner fa-pulse fa-fw" style="margin-top: 10px;" *ngIf="loadingState.isLoadingCustomerId"></i>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label col-sm-2" for="customerEnv">CustomerEnv:</label>
+                            <div class="col-sm-9">
+                                <select class="form-control" name="customerEnv" [(ngModel)]="currentCustomerEnv" (change)="changeCustomerEnv()" 
+                                    [disabled]="loadingState.isLoadingCustomerEnv">
+                                    <option *ngFor="let customerEnv of customerEnvs; trackBy: index" [ngValue]="customerEnv" [innerHtml]="customerEnv"></option>
+                                </select>
+                            </div>
+                            <i class="fa fa-spinner fa-pulse fa-fw" style="margin-top: 10px;" *ngIf="loadingState.isLoadingCustomerEnv"></i>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label col-sm-2" for="entitySpace">EntitySpace:</label>
+                            <div class="col-sm-9">
+                                <select class="form-control" name="entitySpace" [(ngModel)]="currentEntitySpace" (change)="changeEntitySpace()" 
+                                    [disabled]="loadingState.isLoadingEntitySpace">
+                                    <option *ngFor="let entitySpace of entitySpaces; trackBy: index" [ngValue]="entitySpace" [innerHtml]="entitySpace"></option>
+                                </select>
+                            </div>
+                            <i class="fa fa-spinner fa-pulse fa-fw" style="margin-top: 10px;" *ngIf="loadingState.isLoadingEntitySpace"></i>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label col-sm-2" for="entitySpaceView">EntitySpaceView:</label>
+                            <div class="col-sm-9">
+                                <select class="form-control" name="entitySpaceView" [(ngModel)]="currentEntitySpaceView" 
+                                    [disabled]="loadingState.isLoadingEntitySpaceView">
+                                    <option *ngFor="let entitySpaceView of entitySpaceViews; trackBy: index" [ngValue]="entitySpaceView" 
+                                        [innerHtml]="entitySpaceView"></option>
+                                </select>
+                            </div>
+                            <i class="fa fa-spinner fa-pulse fa-fw" style="margin-top: 10px;" *ngIf="loadingState.isLoadingEntitySpaceView"></i>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label col-sm-2" for="segment">Segment:</label>
+                            <div class="col-sm-9">
+                                <input class="form-control" id="segment" required [(ngModel)]="segment" placeholder="Enter segment" name="segment">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label col-sm-2" for="owner">Owner:</label>
+                            <div class="col-sm-9">
+                                <input class="form-control" id="owner" required [(ngModel)]="owner" placeholder="Enter owner" name="owner">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-sm-offset-2 col-sm-4">
+                                <button class="btn btn-primary" [disabled]="!triageInputForm.form.valid || isAddingViewSupervisor" (click)="addTriageViewSupervisor()">
+                                    <i class="fa fa-spinner fa-pulse fa-fw" *ngIf="isAddingViewSupervisor"></i>
+                                    <span class="sr-only">Loading...</span>
+                                    Submit
+                                </button>
+                            </div>
+                            <div class="col-sm-offset-3 col-sm-2">
+                                <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <!-- <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                </div> -->
+            </div>
+        </div>
+    </div>
+</div>

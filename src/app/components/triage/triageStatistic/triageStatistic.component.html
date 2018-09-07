@@ -1,0 +1,83 @@
+<div class="container-fluid">
+    <div class="row">
+        <div class="panel panel-primary col-sm-6" style="padding:0;">
+            <div class="panel-heading">Real time</div>
+            <div class="panel-body text-center" style="padding-left: 100px;">
+                <ngx-charts-advanced-pie-chart [view]="distributionPieChart.view" [scheme]="distributionPieChart.scheme" [results]="distributionPieChart.results"
+                    [gradient]="distributionPieChart.gradient">
+                </ngx-charts-advanced-pie-chart>
+            </div>
+        </div>
+        <div class="panel panel-primary col-sm-6" style="padding:0;">
+            <div class="panel-heading">ViewState Statistic</div>
+            <div class="panel-body text-center" style="padding-left: 100px;">
+                <ngx-charts-pie-grid [view]="currentViewStateDistributionPieGridChart.view" [scheme]="currentViewStateDistributionPieGridChart.scheme" 
+                    [results]="currentViewStateDistributionPieGridChart.results">
+                </ngx-charts-pie-grid>
+                <ngx-charts-pie-grid [view]="originalViewStateDistributionPieGridChart.view" [scheme]="originalViewStateDistributionPieGridChart.scheme" 
+                    [results]="originalViewStateDistributionPieGridChart.results">
+                </ngx-charts-pie-grid>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="panel panel-primary col-sm-6" style="padding:0;">
+            <div class="panel-heading">Monthly Top 10 triaged views</div>
+            <div class="panel-body text-center" style="padding-left: 100px;">
+                <ngx-charts-bar-vertical [view]="triageTopTenBarChart.view" [scheme]="triageTopTenBarChart.scheme" [results]="triageTopTenBarChart.results"
+                    [gradient]="triageTopTenBarChart.gradient" [xAxis]="triageTopTenBarChart.xAxis" [yAxis]="triageTopTenBarChart.yAxis"
+                    [legendTitle]="triageTopTenBarChart.legendTitle"
+                    [legend]="triageTopTenBarChart.legend" [showXAxisLabel]="triageTopTenBarChart.showXAxisLabel" [showYAxisLabel]="triageTopTenBarChart.showYAxisLabel"
+                    [xAxisLabel]="triageTopTenBarChart.xAxisLabel" [yAxisLabel]="triageTopTenBarChart.yAxisLabel">
+                    <!-- (select)="onSelect($event)"> -->
+                </ngx-charts-bar-vertical>
+            </div>
+        </div>
+        <div class="panel panel-primary col-sm-6" style="padding:0;">
+            <div class="panel-heading">View Version Delay</div>
+            <div class="panel-body text-center" style="padding-left: 100px;">
+                <ngx-charts-pie-grid
+                    [view]="versionDelayDistributionPieGridChart.view"
+                    [scheme]="versionDelayDistributionPieGridChart.scheme"
+                    [results]="versionDelayDistributionPieGridChart.results">
+                    <ng-template #tooltipTemplate let-item="model">
+                        <p style="font-size:20px;margin:1px 0 0 0;">{{versionDelayDistributionPieGridChart.pieGridChartDetailLayerValueDict.get(item.name)[0]}}
+                            ~{{versionDelayDistributionPieGridChart.pieGridChartDetailLayerValueDict.get(item.name)[1]}}
+                        </p>
+                        <ol style="text-align:left">
+                            <li *ngFor="let t of versionDelayDistributionPieGridChart.pieGridChartDetailDict.get(item.name); trackBy: index">
+                                {{t.name}},{{t.value}}
+                                <br>
+                            </li>
+                        </ol>
+                    </ng-template>
+                </ngx-charts-pie-grid>
+            </div>
+        </div>  
+    </div>
+</div>
+
+<div>
+    <div class="panel panel-primary">
+        <div class="panel-heading">Monthly Triage</div>
+        <div class="panel-body">
+            <ngx-charts-line-chart
+                [view]="monthlyCountLineChart.view"
+                [scheme]="monthlyCountLineChart.scheme"
+                [results]="monthlyCountLineChart.results"
+                [gradient]="monthlyCountLineChart.gradient"
+                [xAxis]="monthlyCountLineChart.xAxis"
+                [yAxis]="monthlyCountLineChart.yAxis"
+                [legend]="monthlyCountLineChart.legend"
+                [showXAxisLabel]="monthlyCountLineChart.showXAxisLabel"
+                [showYAxisLabel]="monthlyCountLineChart.showYAxisLabel"
+                [xAxisLabel]="monthlyCountLineChart.xAxisLabel"
+                [yAxisLabel]="monthlyCountLineChart.yAxisLabel"
+                [autoScale]="monthlyCountLineChart.autoScale">
+            </ngx-charts-line-chart>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,55 @@
+<div class="stepwizard col-md-offset-3">
+    <div class="stepwizard-row setup-panel" [ngSwitch]="analysisType">
+        <div class="stepwizard-step">
+            <a routerLink="/entityanalysis/entityspace/explorer" 
+                type="button" 
+                class="btn btn-circle analysisnav"
+                [ngClass] = "{'btn-primary': stage=='Explorer', 'btn-default': stage!='Explorer'}"
+                data-toggle="tooltip" 
+                data-placement="top" 
+                title="Explorer"
+                >
+                E
+            </a>
+            <p>{{stage}}</p>
+        </div>
+        <div class="stepwizard-step">
+            <a routerLink="/entityanalysis/entityspace/statistic" 
+                type="button" 
+                class="btn btn-circle analysisnav"
+                [ngClass] = "{'btn-primary': stage=='Statistic', 'btn-default': stage!='Statistic'}"              
+                data-toggle="tooltip" 
+                data-placement="top" 
+                title="Statistic"
+                >
+                S
+            </a>
+            <!-- <p>Statistic</p> -->
+        </div>
+        <div class="stepwizard-step">
+            <a routerLink="/entityanalysis/entityspace/filter" 
+                type="button" 
+                class="btn btn-circle analysisnav"
+                [ngClass] = "{'btn-primary': stage=='Filter', 'btn-default': stage!='Filter'}"                
+                data-toggle="tooltip" 
+                data-placement="top" 
+                title="Filter"
+                >
+                F
+            </a>
+            <!-- <p>Filter</p> -->
+        </div>
+        <div class="stepwizard-step" *ngSwitchCase="2">
+            <a routerLink="/entityanalysis/entitySpace/filter" 
+                type="button" 
+                class="btn btn-default btn-circle analysisnav"
+                data-toggle="tooltip" 
+                data-placement="top" 
+                title="Filter"
+                >
+                F
+            </a>
+            <p>Filter</p>
+        </div>
+    </div>
+</div>

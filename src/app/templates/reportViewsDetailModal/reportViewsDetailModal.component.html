@@ -1,0 +1,64 @@
+<div>
+    <table class="table" style="font-size:16px;text-align:center">
+        <thead>
+            <tr class="bg-primary">
+                <th></th>
+                <th class="pointer" (click)="sortViewDetails('Id',idDesc)">
+                    Id
+                    <i class="text-white fa" [ngClass]="IdDesc? 'fa-caret-down' : 'fa-caret-up'"></i>
+                </th>
+                <th class="pointer" (click)="sortViewDetails('ViewName')">
+                    View Name
+                    <i class="text-white fa" [ngClass]="viewNameDesc? 'fa-caret-down' : 'fa-caret-up'"></i>
+                </th>
+                <th class="pointer" (click)="sortViewDetails('MissSla')">
+                    Miss SLA
+                    <i class="text-white fa" [ngClass]="missSlaDesc? 'fa-caret-down' : 'fa-caret-up'"></i>
+                </th>
+                <th class="pointer" (click)="sortViewDetails('TriageTimes')">
+                    Triage Times
+                    <i class="text-white fa" [ngClass]="triageTimesDesc? 'fa-caret-down' : 'fa-caret-up'"></i>
+                </th>
+                <th class="pointer" (click)="sortViewDetails('Updates')">
+                    Updates
+                    <i class="text-white fa" [ngClass]="updatesDesc? 'fa-caret-down' : 'fa-caret-up'"></i>
+                </th>
+                <th>ViewState</th>
+                <th class="pointer" (click)="sortViewDetails('LatestVersionLatency')">
+                    LastLatency 
+                    <i class="text-primary fa" [ngClass]="latestVersionLatencyDesc? 'fa-caret-down' : 'fa-caret-up'"></i>
+                </th>
+                <th class="pointer" (click)="sortViewDetails('LatestSucceedVersionLatency')">
+                    LastSucceedLatency 
+                    <i class="text-primary fa" [ngClass]="latestSucceedVersionLatencyDesc? 'fa-caret-down' : 'fa-caret-up'"></i>
+                </th>
+                <th>Segment</th>
+                <th>Owner</th>
+            </tr>
+        </thead>
+        <tbody *ngFor="let triageViewSupervisor of triageViewSupervisors">
+            <tr>
+                <th class="text-primary" (click)="expandViewDetail(triageViewSupervisor)">
+                    <i [ngClass]="triageViewSupervisor.expandStatistic ? 'fa fa-chevron-up': 'fa fa-chevron-down'"></i>
+                </th>
+                <th [innerHtml]="triageViewSupervisor.id"></th>
+                <th>
+                    <a target="_blank" [href]="triageViewSupervisor.entitySpaceViewUrl" [innerHTML]="triageViewSupervisor.entitySpaceViewName"></a>
+                </th>
+                <th [innerHtml]="triageViewSupervisor.missSla"></th>
+                <th [innerHtml]="triageViewSupervisor.triageTimes"></th>
+                <th [innerHtml]="triageViewSupervisor.updates"></th>
+                <th [innerHtml]="triageViewSupervisor.originalState"></th>
+                <th [innerHTML]="triageViewSupervisor.latestVersionLatency"></th>
+                <th [innerHTML]="triageViewSupervisor.latestSucceedVersionLatency"></th>
+                <th><div class="ellipsis" [title]="triageViewSupervisor.segment" [innerHtml]="triageViewSupervisor.segment"></div></th>
+                <th [innerHtml]="triageViewSupervisor.owner"></th>
+            </tr>
+            <tr *ngIf="triageViewSupervisor.expandStatistic">
+                <td colspan="8">
+                    <triage-view-statistic [triageViewSupervisor]="triageViewSupervisor"></triage-view-statistic>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>

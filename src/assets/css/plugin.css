@@ -1,0 +1,12 @@
+/* write css to cover plugin's original css or hack css to cover unexpected cases in plugin */
+
+path[d="M0,295h666h0v0v1v0h0h-666h0v0v-1v0h0z"],
+path[d="M0,295h1333h0v0v1v0h0h-1333h0v0v-1v0h0z"],
+path[d="M0,295h261h0v0v1v0h0h-261h0v0v-1v0h0z"], /*green*/
+path[d="M0,295h216h0v0v1v0h0h-216h0v0v-1v0h0z"],
+path[d="M0,295h160h0v0v1v0h0h-160h0v0v-1v0h0z"],
+path[d="M0,295h441h0v0v1v0h0h-441h0v0v-1v0h0z"],
+path[d="M0,295h184h0v0v1v0h0h-184h0v0v-1v0h0z"]
+ {
+    visibility: hidden !important;
+}
